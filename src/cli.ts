@@ -28,7 +28,6 @@ interface GlobalOptions {
   project?: string;
   pluginData?: string;
   offline?: boolean;
-  frozenLockfile?: boolean;
   gitignore?: boolean;
   verbose?: boolean;
 }
@@ -45,7 +44,6 @@ function addCommonOptions(command: Command): Command {
     .option('--project <path>', 'project directory', process.cwd())
     .option('--plugin-data <path>', 'plugin data directory', DEFAULT_PLUGIN_DATA_DIR)
     .option('--offline', 'use cached remote only', false)
-    .option('--frozen-lockfile', 'fail if lockfile would change', false)
     .option('--no-gitignore', 'do not update .gitignore')
     .option('--verbose', 'print verbose output', false);
 }
@@ -59,7 +57,6 @@ addCommonOptions(program.command('init'))
         pluginDataDir: options.pluginData ?? DEFAULT_PLUGIN_DATA_DIR,
         hookMode: options.hookMode,
         offline: options.offline,
-        frozenLockfile: options.frozenLockfile,
         gitignore: options.gitignore,
         verbose: options.verbose,
       });
@@ -87,7 +84,6 @@ addCommonOptions(program.command('sync')).action(async (options: GlobalOptions) 
       projectDir: options.project ?? process.cwd(),
       pluginDataDir: options.pluginData ?? DEFAULT_PLUGIN_DATA_DIR,
       offline: options.offline,
-      frozenLockfile: options.frozenLockfile,
       gitignore: options.gitignore,
       verbose: options.verbose,
     });
@@ -113,7 +109,6 @@ addCommonOptions(program.command('explain')).action(async (options: GlobalOption
       projectDir: options.project ?? process.cwd(),
       pluginDataDir: options.pluginData ?? DEFAULT_PLUGIN_DATA_DIR,
       offline: options.offline,
-      frozenLockfile: options.frozenLockfile,
       gitignore: false,
       dryRun: true,
       verbose: options.verbose,
@@ -137,7 +132,6 @@ addCommonOptions(program.command('print')).action(async (options: GlobalOptions)
       projectDir: options.project ?? process.cwd(),
       pluginDataDir: options.pluginData ?? DEFAULT_PLUGIN_DATA_DIR,
       offline: options.offline,
-      frozenLockfile: options.frozenLockfile,
       gitignore: false,
       dryRun: true,
       verbose: options.verbose,

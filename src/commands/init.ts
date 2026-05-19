@@ -1,6 +1,5 @@
 import { access, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
-
 import { loadManifest, type Manifest } from '../config/manifest.js';
 import { assertSafeProjectWrite, assertSafeRemoteRead } from '../config/safe-paths.js';
 import { PROJECT_FILES } from '../config/paths.js';
@@ -10,7 +9,6 @@ import { collectProjectFacts, loadRules, resolveRuleParams, selectRules, type Ru
 import { loadMemoryFragments } from '../remote/memory.js';
 import { compileMemory, compileRule, generatedRuleFilename } from '../output/compiler.js';
 import { mergeSettings, type JsonValue } from '../output/settings.js';
-import { buildLockfile, assertFrozenLockfile } from '../output/lockfile.js';
 import { ensureGitignoreEntries } from '../output/gitignore.js';
 import { hookFallbackWarning, initSummaryTemplate } from '../output/templates.js';
 
@@ -21,8 +19,6 @@ export interface InitOptions {
   hookMode?: boolean;
   /** Skip network fetch; use the cached remote clone. */
   offline?: boolean;
-  /** Fail if the generated lockfile would differ from the committed one (for CI). */
-  frozenLockfile?: boolean;
   gitignore?: boolean;
   /** Skip all file writes; used by explain and print commands. */
   dryRun?: boolean;
@@ -99,7 +95,9 @@ async function initWithManifest(
         : Promise.resolve(),
     ]);
 
-    await writeLockfileAndGitignore(options, manifest, remote.resolvedCommit, config, selection);
+    if (options.gitignore !== false) {
+      await ensureGitignoreEntries(options.projectDir);
+    }
   }
 
   return {
@@ -160,45 +158,6 @@ async function materializeSettings(projectDir: string, sourceDir: string, source
   await writeProjectFile(projectDir, PROJECT_FILES.settingsLocal, `${JSON.stringify(mergeSettings(settings), null, 2)}\n`);
 }
 
-async function writeLockfileAndGitignore(
-  options: Required<Pick<InitOptions, 'projectDir' | 'pluginDataDir'>> & InitOptions,
-  manifest: Manifest,
-  resolvedCommit: string,
-  config: { memory: { include: string[] }; settings_local: { include: string[] } },
-  selection: RuleSelection,
-): Promise<void> {
-  const generatedAt = new Date().toISOString();
-  const lockfile = buildLockfile({
-    remote: manifest.remote,
-    requestedRef: manifest.ref,
-    resolvedCommit,
-    generatedAt,
-    memory: config.memory.include.map((source) => ({ source })),
-    rules: selection.selected.map((rule) => ({ id: rule.id, version: rule.version, source: rule.source })),
-    settingsLocal: manifest.output.settings_local ? config.settings_local.include.map((source) => ({ source })) : [],
-  });
-
-  const lockPath = join(options.projectDir, PROJECT_FILES.lockfile);
-
-  if (options.frozenLockfile) {
-    let existing: string | null = null;
-    try {
-      existing = await readFile(lockPath, 'utf8');
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-        throw error;
-      }
-    }
-    assertFrozenLockfile(existing, lockfile);
-  } else {
-    await writeProjectFile(options.projectDir, PROJECT_FILES.lockfile, lockfile);
-  }
-
-  if (options.gitignore !== false) {
-    await ensureGitignoreEntries(options.projectDir);
-  }
-}
-
 async function loadSettingsFragments(remoteDir: string, sources: string[]): Promise<JsonValue[]> {
   return Promise.all(
     sources.map(async (source) => JSON.parse(await readFile(assertSafeRemoteRead(remoteDir, source), 'utf8')) as JsonValue),
@@ -213,7 +172,7 @@ async function writeProjectFile(projectDir: string, relativePath: string, conten
 
 async function hasGeneratedOutput(projectDir: string): Promise<boolean> {
   try {
-    await access(join(projectDir, PROJECT_FILES.lockfile));
+    await access(join(projectDir, PROJECT_FILES.generatedMemory));
     return true;
   } catch {
     return false;

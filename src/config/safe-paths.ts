@@ -5,7 +5,6 @@ import { PROJECT_FILES } from './paths.js';
 const approvedExact = new Set<string>([
   PROJECT_FILES.generatedRulesDir,
   PROJECT_FILES.settingsLocal,
-  PROJECT_FILES.lockfile,
   PROJECT_FILES.gitignore,
 ]);
 

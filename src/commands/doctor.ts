@@ -13,15 +13,13 @@ export async function doctorProject(projectDir: string): Promise<string> {
 
   const checks: string[] = [`manifest: ok (${manifest.remote})`];
 
-  const [gitignoreExists, lockfileExists, generatedMemoryExists] = await Promise.all([
+  const [gitignoreExists, generatedMemoryExists] = await Promise.all([
     exists(join(projectDir, PROJECT_FILES.gitignore)),
-    exists(join(projectDir, PROJECT_FILES.lockfile)),
     exists(join(projectDir, PROJECT_FILES.generatedMemory)),
   ]);
 
   checks.push(
     gitignoreExists ? 'gitignore: present' : 'gitignore: missing',
-    lockfileExists ? 'lockfile: present' : 'lockfile: missing',
     generatedMemoryExists ? 'generated memory: present' : 'generated memory: missing',
   );
 

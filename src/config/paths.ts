@@ -1,6 +1,5 @@
 export const PROJECT_FILES = {
   manifest: '.claude-remote-config.yml',
-  lockfile: '.claude-remote-config.lock.yml',
   gitignore: '.gitignore',
   generatedMemory: '.claude-remote-config/generated/CLAUDE.md',
   generatedMemoryDir: '.claude-remote-config/generated',
