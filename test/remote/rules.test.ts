@@ -29,6 +29,17 @@ priority: 20
     expect(rule.body.trim()).toBe('# Body');
   });
 
+  it('selects all rules when no tags specified', () => {
+    const rules = [
+      parseRule('rules/a.md', `---\nid: a\ntitle: A\nversion: 1.0.0\ntags: [x]\n---\nA`),
+      parseRule('rules/b.md', `---\nid: b\ntitle: B\nversion: 1.0.0\ntags: [y]\n---\nB`),
+      parseRule('rules/c.md', `---\nid: c\ntitle: C\nversion: 1.0.0\n---\nC`),
+    ];
+
+    const result = selectRules({ manifestTags: [], excludedIds: [], rules, project: projectHasTypescript });
+    expect(result.selected.map((r) => r.id)).toEqual(['a', 'b', 'c']);
+  });
+
   it('selects by tags, then excludes and sorts', () => {
     const rules = [
       parseRule('rules/base/hygiene.md', `---

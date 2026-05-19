@@ -111,7 +111,7 @@ export function selectRules(input: RuleSelectionInput): RuleSelection {
   const tagSet = new Set(input.manifestTags);
 
   for (const rule of input.rules) {
-    if (rule.tags.some((tag) => tagSet.has(tag))) {
+    if (tagSet.size === 0 || rule.tags.some((tag) => tagSet.has(tag))) {
       selected.set(rule.id, rule);
     }
   }
