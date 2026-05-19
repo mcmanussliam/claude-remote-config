@@ -11,7 +11,7 @@ export async function doctorProject(projectDir: string): Promise<string> {
     return `claude-remote-config doctor: missing ${PROJECT_FILES.manifest}\n`;
   }
 
-  const checks: string[] = [`manifest: ok (${manifest.profile})`];
+  const checks: string[] = [`manifest: ok (${manifest.remote})`];
 
   const [gitignoreExists, lockfileExists, generatedMemoryExists] = await Promise.all([
     exists(join(projectDir, PROJECT_FILES.gitignore)),

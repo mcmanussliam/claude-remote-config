@@ -5,7 +5,7 @@ import { loadManifest, type Manifest } from '../config/manifest.js';
 import { assertSafeProjectWrite, assertSafeRemoteRead } from '../config/safe-paths.js';
 import { PROJECT_FILES } from '../config/paths.js';
 import { syncRemote } from '../remote/git.js';
-import { assertProfileListed, loadConfig, loadProfile } from '../remote/profile.js';
+import { loadConfig } from '../remote/profile.js';
 import { collectProjectFacts, loadRules, resolveRuleParams, selectRules, type RuleSelection } from '../remote/rules.js';
 import { loadMemoryFragments } from '../remote/memory.js';
 import { compileMemory, compileRule, generatedRuleFilename } from '../output/compiler.js';
@@ -73,19 +73,13 @@ async function initWithManifest(
     offline: options.offline,
   });
 
-  const config = await loadConfig(remote.sourceDir);
-  assertProfileListed(config, manifest.profile);
-
-  const [profile, rules, projectFacts] = await Promise.all([
-    loadProfile(remote.sourceDir, manifest.profile),
+  const [config, rules, projectFacts] = await Promise.all([
+    loadConfig(remote.sourceDir),
     loadRules(remote.sourceDir),
     collectProjectFacts(options.projectDir),
   ]);
 
   const selection = selectRules({
-    profileId: manifest.profile,
-    requiredIds: profile.rules.required,
-    profileTags: profile.rules.include_tags,
     manifestTags: manifest.include.tags,
     excludedIds: manifest.exclude.rules,
     rules,
@@ -94,18 +88,18 @@ async function initWithManifest(
 
   if (!options.dryRun) {
     await Promise.all([
-      manifest.materialize.memory
-        ? materializeMemory(options.projectDir, remote.sourceDir, profile.memory.include, manifest, remote.resolvedCommit, selection)
+      manifest.output.memory
+        ? materializeMemory(options.projectDir, remote.sourceDir, config.memory.include, manifest, remote.resolvedCommit, selection)
         : Promise.resolve(),
-      manifest.materialize.rules
+      manifest.output.rules
         ? materializeRules(options.projectDir, remote.sourceDir, selection, manifest)
         : Promise.resolve(),
-      manifest.materialize.settings_local
-        ? materializeSettings(options.projectDir, remote.sourceDir, profile.settings_local.include)
+      manifest.output.settings_local
+        ? materializeSettings(options.projectDir, remote.sourceDir, config.settings_local.include)
         : Promise.resolve(),
     ]);
 
-    await writeLockfileAndGitignore(options, manifest, remote.resolvedCommit, profile, selection);
+    await writeLockfileAndGitignore(options, manifest, remote.resolvedCommit, config, selection);
   }
 
   return {
@@ -132,7 +126,6 @@ async function materializeMemory(
       remote: manifest.remote,
       requestedRef: manifest.ref,
       resolvedCommit,
-      profile: manifest.profile,
       memorySources: fragments.map((f) => f.source),
       loadedRules: selection.selected.map((rule) => `${rule.id}@${rule.version}`),
       contents: fragments.map((f) => f.content),
@@ -171,7 +164,7 @@ async function writeLockfileAndGitignore(
   options: Required<Pick<InitOptions, 'projectDir' | 'pluginDataDir'>> & InitOptions,
   manifest: Manifest,
   resolvedCommit: string,
-  profile: { memory: { include: string[] }; settings_local: { include: string[] } },
+  config: { memory: { include: string[] }; settings_local: { include: string[] } },
   selection: RuleSelection,
 ): Promise<void> {
   const generatedAt = new Date().toISOString();
@@ -179,11 +172,10 @@ async function writeLockfileAndGitignore(
     remote: manifest.remote,
     requestedRef: manifest.ref,
     resolvedCommit,
-    profile: manifest.profile,
     generatedAt,
-    memory: profile.memory.include.map((source) => ({ source })),
+    memory: config.memory.include.map((source) => ({ source })),
     rules: selection.selected.map((rule) => ({ id: rule.id, version: rule.version, source: rule.source })),
-    settingsLocal: manifest.materialize.settings_local ? profile.settings_local.include.map((source) => ({ source })) : [],
+    settingsLocal: manifest.output.settings_local ? config.settings_local.include.map((source) => ({ source })) : [],
   });
 
   const lockPath = join(options.projectDir, PROJECT_FILES.lockfile);

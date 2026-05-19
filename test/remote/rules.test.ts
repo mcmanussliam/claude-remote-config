@@ -29,13 +29,13 @@ priority: 20
     expect(rule.body.trim()).toBe('# Body');
   });
 
-  it('selects by required, profile, and tags, then excludes and sorts', () => {
+  it('selects by tags, then excludes and sorts', () => {
     const rules = [
       parseRule('rules/base/hygiene.md', `---
 id: repo.hygiene
 title: Hygiene
 version: 1.0.0
-profiles: [node-service]
+tags: [concern:hygiene]
 priority: 20
 ---
 Hygiene`),
@@ -58,10 +58,7 @@ Playwright`)
     ];
 
     const result = selectRules({
-      profileId: 'node-service',
-      requiredIds: ['repo.hygiene'],
-      profileTags: [],
-      manifestTags: ['concern:security'],
+      manifestTags: ['concern:security', 'concern:hygiene'],
       excludedIds: ['testing.playwright'],
       rules,
       project: projectHasTypescript
@@ -71,12 +68,13 @@ Playwright`)
     expect(result.skipped.find((item) => item.id === 'testing.playwright')?.reason).toMatch(/excluded/);
   });
 
-  it('fails when a required rule does not pass requires checks', () => {
+  it('skips rules that fail requires checks', () => {
     const rules = [
       parseRule('rules/typescript/error.md', `---
 id: typescript.error-handling
 title: Error handling
 version: 1.0.0
+tags: [language:typescript]
 requires:
   files_all:
     - tsconfig.json
@@ -84,17 +82,15 @@ requires:
 Body`)
     ];
 
-    expect(() =>
-      selectRules({
-        profileId: 'node-service',
-        requiredIds: ['typescript.error-handling'],
-        profileTags: [],
-        manifestTags: [],
-        excludedIds: [],
-        rules,
-        project: { files: new Set(['package.json']), packageJson: {} }
-      })
-    ).toThrow(/required rule.*requires/i);
+    const result = selectRules({
+      manifestTags: ['language:typescript'],
+      excludedIds: [],
+      rules,
+      project: { files: new Set(['package.json']), packageJson: {} }
+    });
+
+    expect(result.selected).toHaveLength(0);
+    expect(result.skipped[0]?.reason).toMatch(/requires/i);
   });
 
   it('detects conflicts', () => {
@@ -103,7 +99,7 @@ Body`)
 id: a
 title: A
 version: 1.0.0
-profiles: [node-service]
+tags: [concern:test]
 conflicts_with: [b]
 ---
 A`),
@@ -111,17 +107,14 @@ A`),
 id: b
 title: B
 version: 1.0.0
-profiles: [node-service]
+tags: [concern:test]
 ---
 B`)
     ];
 
     expect(() =>
       selectRules({
-        profileId: 'node-service',
-        requiredIds: [],
-        profileTags: [],
-        manifestTags: [],
+        manifestTags: ['concern:test'],
         excludedIds: [],
         rules,
         project: projectHasTypescript

@@ -54,7 +54,6 @@ Commit:
 ```text
 .claude-remote-config.yml
 .claude-remote-config.lock.yml
-.claude/CLAUDE.md
 .gitignore
 ```
 

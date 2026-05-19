@@ -2,11 +2,10 @@ import { stringify } from 'yaml';
 
 export interface LockfileInput {
   remote: string;
-  /** The ref string from the manifest (e.g. v1.0.0). */
-  requestedRef: string;
+  /** The ref string from the manifest (e.g. v1.0.0), if specified. */
+  requestedRef?: string;
   /** The full SHA that ref resolved to at generation time. */
   resolvedCommit: string;
-  profile: string;
   /** ISO timestamp written for human reference; excluded from frozen comparisons. */
   generatedAt: string;
   memory: Array<{ source: string }>;
@@ -18,9 +17,8 @@ export interface LockfileInput {
 export function buildLockfile(input: LockfileInput): string {
   return stringify({
     remote: input.remote,
-    requested_ref: input.requestedRef,
+    ...(input.requestedRef ? { requested_ref: input.requestedRef } : {}),
     resolved_commit: input.resolvedCommit,
-    profile: input.profile,
     generated_at: input.generatedAt,
     memory: input.memory,
     rules: input.rules,

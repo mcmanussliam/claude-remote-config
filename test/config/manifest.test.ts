@@ -6,8 +6,7 @@ describe('parseManifest', () => {
     const manifest = parseManifest(`
 remote: ../rules
 ref: v1.0.0
-profile: node-service
-materialize:
+output:
   memory: true
   rules: true
   settings_local: true
@@ -22,19 +21,22 @@ exclude:
 `);
 
     expect(manifest.remote).toBe('../rules');
-    expect(manifest.materialize.settings_local).toBe(true);
+    expect(manifest.ref).toBe('v1.0.0');
+    expect(manifest.output.settings_local).toBe(true);
     expect(manifest.params.package_manager).toBe('pnpm');
     expect(manifest.include.tags).toEqual(['concern:security']);
     expect(manifest.exclude.rules).toEqual(['testing.playwright']);
   });
 
-  it('rejects invalid manifests', () => {
-    expect(() => parseManifest('remote: ../rules\nprofile: node-service\n')).toThrow(/ref/i);
+  it('parses manifest without ref (defaults to origin/HEAD)', () => {
+    const manifest = parseManifest('remote: ../rules\n');
+    expect(manifest.remote).toBe('../rules');
+    expect(manifest.ref).toBeUndefined();
   });
 
-  it('rejects unrecognised materialize fields', () => {
+  it('rejects unrecognised output fields', () => {
     expect(() =>
-      parseManifest('remote: ../rules\nref: v1\nprofile: p\nmaterialize:\n  mcp_local: true\n')
+      parseManifest('remote: ../rules\noutput:\n  mcp_local: true\n')
     ).toThrow();
   });
 });

@@ -47,3 +47,14 @@ Desktop.ini
 tmp/
 temp/
 .cache/
+
+# claude-remote-config generated files
+.claude-remote-config/generated/
+.claude-remote-config/cache/
+.claude/rules/claude-remote-config/
+
+# claude-remote-config generated local Claude Code config
+.claude/settings.local.json
+.claude/mcp.local.json
+.claude/agents.local/
+.claude/hooks.local.json

@@ -60,7 +60,7 @@ export function setupWritePath(projectDir: string, relativePath: string): string
   const target = resolve(projectDir, relativePath);
   const rel = relative(resolve(projectDir), target).replaceAll('\\', '/');
 
-  if (rel === PROJECT_FILES.manifest || rel === PROJECT_FILES.bridgeClaude || rel === PROJECT_FILES.gitignore) {
+  if (rel === PROJECT_FILES.manifest || rel === PROJECT_FILES.gitignore) {
     return target;
   }
 

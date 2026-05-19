@@ -8,8 +8,8 @@ import { PLUGIN_DATA } from '../config/paths.js';
 
 export interface SyncRemoteOptions {
   remote: string;
-  /** Git ref (tag, branch, or SHA) to check out after fetching. */
-  ref: string;
+  /** Git ref (tag, branch, or SHA) to check out. Defaults to origin/HEAD. */
+  ref?: string;
   pluginDataDir: string;
   /** Skip fetch; requires a prior clone to already exist. */
   offline?: boolean;
@@ -36,7 +36,7 @@ export async function syncRemote(options: SyncRemoteOptions): Promise<SyncedRemo
     }
   }
 
-  await git(['checkout', '--force', options.ref], sourceDir);
+  await git(['checkout', '--force', options.ref ?? 'origin/HEAD'], sourceDir);
   const resolvedCommit = (await git(['rev-parse', 'HEAD'], sourceDir)).trim();
 
   return { sourceDir, resolvedCommit };

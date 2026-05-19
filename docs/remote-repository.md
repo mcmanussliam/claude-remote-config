@@ -53,3 +53,7 @@ ref: v1.0.0
 ```
 
 Use tags or commit SHAs for predictable rollouts. Branches work, but the generated lockfile will change when the branch moves.
+
+## Example
+
+See [mcmanussliam/claude-config](https://github.com/mcmanussliam/claude-config) for a complete TypeScript-focused remote config repository with profiles, memory, rules, and local settings.

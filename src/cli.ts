@@ -99,11 +99,10 @@ program
   .command('setup')
   .option('--project <path>', 'project directory', process.cwd())
   .requiredOption('--remote <remote>', 'remote rules repository')
-  .option('--ref <ref>', 'remote ref', 'v1.0.0')
-  .option('--profile <profile>', 'profile id', 'node-service')
-  .action(async (options: { project: string; remote: string; ref: string; profile: string }) => {
+  .option('--ref <ref>', 'remote ref (tag, branch, or SHA; defaults to origin/HEAD)')
+  .action(async (options: { project: string; remote: string; ref?: string }) => {
     await run(async () => {
-      await setupProject({ projectDir: options.project, remote: options.remote, ref: options.ref, profile: options.profile });
+      await setupProject({ projectDir: options.project, remote: options.remote, ref: options.ref });
       process.stdout.write(SETUP_COMPLETE_MESSAGE);
     });
   });

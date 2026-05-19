@@ -26,7 +26,6 @@ const RuleSchema = z.object({
   title: z.string().min(1),
   version: z.string().min(1),
   status: z.string().optional(),
-  profiles: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
   paths: z.array(z.string()).default([]),
   priority: z.number().default(100),
@@ -62,11 +61,6 @@ export interface ProjectFacts {
 }
 
 export interface RuleSelectionInput {
-  profileId: string;
-  /** Rule IDs that must be selected regardless of profile/tag matching. */
-  requiredIds: string[];
-  /** Tags declared by the profile's include_tags. */
-  profileTags: string[];
   /** Tags added by the project's manifest include.tags. */
   manifestTags: string[];
   /** Rule IDs explicitly excluded by the manifest. */
@@ -109,24 +103,15 @@ export async function loadRules(remoteDir: string): Promise<Rule[]> {
   return rules;
 }
 
-/** Selects rules by required IDs first, then profile match, then tag match; excluded IDs and requires checks run last. */
+/** Selects rules by tag match; excluded IDs and requires checks run last. */
 export function selectRules(input: RuleSelectionInput): RuleSelection {
   const byId = new Map(input.rules.map((rule) => [rule.id, rule]));
-  const required = new Set(input.requiredIds);
   const selected = new Map<string, Rule>();
   const skipped: Array<{ id: string; source: string; reason: string }> = [];
-  const tagSet = new Set([...input.profileTags, ...input.manifestTags]);
-
-  for (const id of required) {
-    const rule = byId.get(id);
-    if (!rule) {
-      throw new Error(`Required rule missing: ${id}`);
-    }
-    selected.set(rule.id, rule);
-  }
+  const tagSet = new Set(input.manifestTags);
 
   for (const rule of input.rules) {
-    if (rule.profiles.includes(input.profileId) || rule.tags.some((tag) => tagSet.has(tag))) {
+    if (rule.tags.some((tag) => tagSet.has(tag))) {
       selected.set(rule.id, rule);
     }
   }
@@ -146,10 +131,6 @@ export function selectRules(input: RuleSelectionInput): RuleSelection {
 
     selected.delete(rule.id);
     skipped.push({ id: rule.id, source: rule.source, reason: 'requires checks failed' });
-
-    if (required.has(rule.id)) {
-      throw new Error(`Required rule ${rule.id} requires checks failed`);
-    }
   }
 
   const output = [...selected.values()].sort(

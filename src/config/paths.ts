@@ -2,7 +2,6 @@ export const PROJECT_FILES = {
   manifest: '.claude-remote-config.yml',
   lockfile: '.claude-remote-config.lock.yml',
   gitignore: '.gitignore',
-  bridgeClaude: '.claude/CLAUDE.md',
   generatedMemory: '.claude-remote-config/generated/CLAUDE.md',
   generatedMemoryDir: '.claude-remote-config/generated',
   generatedCacheDir: '.claude-remote-config/cache',
@@ -20,7 +19,6 @@ export const PLUGIN_DATA = {
 
 export const REMOTE_FILES = {
   config: 'claude-remote-manifest.yml',
-  profilesDir: 'profiles',
   rulesGlob: 'rules/**/*.md',
 } as const;
 

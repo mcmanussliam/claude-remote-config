@@ -30,7 +30,7 @@
 
 ```bash
 .claude-remote-config.yml
-.claude/CLAUDE.md
+.gitignore
 ```
 
 4. Restart Claude Code in the project to fetch the remote ruleset. The plugin's `SessionStart` hook syncs the pinned remote config and generates the local Claude files automatically.
@@ -48,6 +48,7 @@
 - [Commands](docs/commands.md)
 - [Generated files](docs/generated-files.md)
 - [Troubleshooting](docs/troubleshooting.md)
+- [TypeScript remote config example](https://github.com/mcmanussliam/claude-config)
 
 <p align="center">
   Version your Claude Code guidance once, then apply it everywhere.

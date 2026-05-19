@@ -4,18 +4,16 @@ import { dirname, join } from 'node:path';
 import { ensureGitignoreEntries } from '../output/gitignore.js';
 import { PROJECT_FILES } from '../config/paths.js';
 import { setupWritePath } from '../config/safe-paths.js';
-import { bridgeClaudeTemplate, setupManifestTemplate } from '../output/templates.js';
+import { setupManifestTemplate } from '../output/templates.js';
 
 export interface SetupOptions {
   projectDir: string;
   remote: string;
-  ref: string;
-  profile: string;
+  ref?: string;
 }
 
 export async function setupProject(options: SetupOptions): Promise<void> {
   await writeIfMissing(setupWritePath(options.projectDir, PROJECT_FILES.manifest), setupManifestTemplate(options));
-  await writeIfMissing(setupWritePath(options.projectDir, PROJECT_FILES.bridgeClaude), bridgeClaudeTemplate());
   await ensureGitignoreEntries(options.projectDir);
 }
 

@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 import { PROJECT_FILES } from './paths.js';
 
-const MaterializeSchema = z
+const OutputSchema = z
   .object({
     memory: z.boolean().default(true),
     rules: z.boolean().default(true),
@@ -17,9 +17,8 @@ const MaterializeSchema = z
 
 const ManifestSchema = z.object({
   remote: z.string().min(1),
-  ref: z.string().min(1),
-  profile: z.string().min(1),
-  materialize: MaterializeSchema,
+  ref: z.string().min(1).optional(),
+  output: OutputSchema,
   params: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).default({}),
   include: z
     .object({

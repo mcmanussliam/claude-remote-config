@@ -49,4 +49,4 @@ The generated file includes metadata for:
 - loaded memory fragments
 - selected rules
 
-The bridge file at `.claude/CLAUDE.md` references this generated memory file so Claude Code can load it for the project.
+The plugin's `SessionStart` hook reports the generated configuration to Claude Code at session startup. `setup` does not create or modify `.claude/CLAUDE.md`.

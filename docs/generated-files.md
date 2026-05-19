@@ -4,16 +4,13 @@ This guide explains what `claude-remote-config` writes in a consuming project.
 
 ## Human-authored files
 
-These files are created by `setup` when missing and should usually be committed:
+This file is created by `setup` when missing and should usually be committed:
 
 ```text
 .claude-remote-config.yml
-.claude/CLAUDE.md
 ```
 
 `.claude-remote-config.yml` selects the remote, ref, profile, params, included tags, and excluded rules.
-
-`.claude/CLAUDE.md` is a bridge file that points Claude Code at the generated shared instructions.
 
 ## Lockfile
 
@@ -43,6 +40,8 @@ These paths are generated and are normally ignored:
 `.claude/rules/claude-remote-config/` contains generated Claude Code rule files.
 
 `.claude/settings.local.json` contains generated local Claude Code settings.
+
+The generated shared memory is supplied to Claude Code by the plugin's `SessionStart` hook. `setup` does not create or modify `.claude/CLAUDE.md`.
 
 ## `.gitignore`
 

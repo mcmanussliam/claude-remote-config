@@ -134,3 +134,7 @@ Rules are selected in this order:
 5. `requires` checks.
 6. Conflict detection.
 7. Sort by `priority`, then rule ID, then source path.
+
+## Example rule set
+
+See [mcmanussliam/claude-config](https://github.com/mcmanussliam/claude-config) for a TypeScript-focused rule set covering repository hygiene, strict typing, error handling, testing, security, and package management.

@@ -22,7 +22,6 @@ After setup succeeds, tell the user to review and commit:
 
 ```text
 .claude-remote-config.yml
-.claude/CLAUDE.md
 .gitignore
 ```
 

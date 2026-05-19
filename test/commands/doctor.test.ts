@@ -15,10 +15,10 @@ describe('doctorProject', () => {
     const dir = await mkdtemp(join(tmpdir(), 'claude-remote-config-doctor-'));
     await writeFile(
       join(dir, '.claude-remote-config.yml'),
-      'remote: ../rules\nref: v1.0.0\nprofile: node-service\n'
+      'remote: ../rules\n'
     );
     const out = await doctorProject(dir);
-    expect(out).toContain('manifest: ok (node-service)');
+    expect(out).toContain('manifest: ok (../rules)');
     expect(out).toContain('lockfile: missing');
     expect(out).toContain('generated memory: missing');
   });
@@ -27,7 +27,7 @@ describe('doctorProject', () => {
     const dir = await mkdtemp(join(tmpdir(), 'claude-remote-config-doctor-'));
     await writeFile(
       join(dir, '.claude-remote-config.yml'),
-      'remote: ../rules\nref: v1.0.0\nprofile: node-service\n'
+      'remote: ../rules\n'
     );
     await writeFile(join(dir, '.claude-remote-config.lock.yml'), 'remote: ../rules\n');
     await mkdir(join(dir, '.claude-remote-config/generated'), { recursive: true });
