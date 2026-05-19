@@ -6,8 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/bin/claude-remote-config",
-            "args": ["init", "--project", "${CLAUDE_PROJECT_DIR}", "--plugin-data", "${CLAUDE_PLUGIN_DATA}", "--hook-mode"]
+            "command": "${CLAUDE_PLUGIN_ROOT}/bin/claude-remote-config init --project ${CLAUDE_PROJECT_DIR} --plugin-data ${CLAUDE_PLUGIN_DATA} --hook-mode"
           }
         ]
       }
