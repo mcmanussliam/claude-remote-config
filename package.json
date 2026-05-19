@@ -11,6 +11,9 @@
     "dist/",
     ".claude-plugin/",
     "hooks/",
+    "commands/",
+    "docs/*.md",
+    "assets/",
     "README.md"
   ],
   "scripts": {
