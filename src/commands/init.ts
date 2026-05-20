@@ -74,27 +74,31 @@ async function initWithManifest(
     project: projectFacts,
   });
 
-  if (!options.dryRun) {
-    await materializeRemoteAssets(options.projectDir, {
-      ...selection,
-      rules: manifest.output.rules ? selection.rules : [],
-      commands: manifest.output.commands ? selection.commands : [],
-      skills: manifest.output.skills ? selection.skills : [],
-      settings: manifest.output.settingsLocal ? selection.settings : undefined,
-      hooks: manifest.output.hooksLocal ? selection.hooks : undefined,
-    });
-
-    if (options.gitignore !== false) {
-      await ensureGitignoreEntries(options.projectDir);
-    }
-  }
-
-  return {
+  const result: InitResult = {
     manifest,
     selection,
     resolvedCommit: remote.resolvedCommit,
     summary: initSummaryTemplate(manifest, remote.resolvedCommit, selection),
   };
+
+  if (options.dryRun) {
+    return result;
+  }
+
+  await materializeRemoteAssets(options.projectDir, {
+    ...selection,
+    rules: manifest.output.rules ? selection.rules : [],
+    commands: manifest.output.commands ? selection.commands : [],
+    skills: manifest.output.skills ? selection.skills : [],
+    settings: manifest.output.settingsLocal ? selection.settings : undefined,
+    hooks: manifest.output.hooksLocal ? selection.hooks : undefined,
+  });
+
+  if (options.gitignore) {
+    await ensureGitignoreEntries(options.projectDir);
+  }
+
+  return result;
 }
 
 async function hasGeneratedOutput(projectDir: string): Promise<boolean> {
