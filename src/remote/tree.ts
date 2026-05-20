@@ -9,6 +9,7 @@ import type {
   RemoteJsonAsset,
   RemoteRuleAsset,
   RemoteSkillAsset,
+  RemoteSkillFile,
   RemoteTreeSelection,
 } from './assets.js';
 import { type ProjectFacts, evaluateRequires, parseRequires } from './requires.js';
@@ -36,81 +37,60 @@ export async function discoverRemoteTree(
   const skills: RemoteSkillAsset[] = [];
   const skipped: Array<{ path: string; reason: string }> = [];
 
-  const claudeDir = join(remoteDir, REMOTE_FILES.claudeDir);
-
-  // Discover rules
-  const rulesDir = join(remoteDir, REMOTE_FILES.rulesDir);
-  await walkDirectory(rulesDir, remoteDir, input, skipped, async (filePath, relDir) => {
-    if (filePath.endsWith('.md')) {
+  const [settings, hooks] = await Promise.all([
+    readJsonAsset(join(remoteDir, REMOTE_FILES.settings), REMOTE_FILES.settings),
+    readJsonAsset(join(remoteDir, REMOTE_FILES.hooks), REMOTE_FILES.hooks),
+    walkDirectory(join(remoteDir, REMOTE_FILES.rulesDir), remoteDir, input, skipped, async (filePath) => {
+      if (!filePath.endsWith('.md')) return;
       const content = await readFile(filePath, 'utf8');
-      const remotePath = relative(remoteDir, filePath);
-      const relativeOutputPath = relative(join(remoteDir, REMOTE_FILES.rulesDir), filePath);
-      rules.push({ kind: 'rule', remotePath, relativeOutputPath, content });
-    }
-  });
-
-  // Discover commands
-  const commandsDir = join(remoteDir, REMOTE_FILES.commandsDir);
-  await walkDirectory(commandsDir, remoteDir, input, skipped, async (filePath, relDir) => {
-    if (filePath.endsWith('.md')) {
+      rules.push({
+        kind: 'rule',
+        remotePath: relative(remoteDir, filePath),
+        relativeOutputPath: relative(join(remoteDir, REMOTE_FILES.rulesDir), filePath),
+        content,
+      });
+    }),
+    walkDirectory(join(remoteDir, REMOTE_FILES.commandsDir), remoteDir, input, skipped, async (filePath) => {
+      if (!filePath.endsWith('.md')) return;
       const content = await readFile(filePath, 'utf8');
-      const remotePath = relative(remoteDir, filePath);
-      const relativeOutputPath = relative(join(remoteDir, REMOTE_FILES.commandsDir), filePath);
-      const commandName = basename(filePath, '.md');
-      commands.push({ kind: 'command', remotePath, relativeOutputPath, commandName, content });
-    }
-  });
-
-  // Discover skills — immediate subdirectories of .claude/skills/ that contain SKILL.md
-  const skillsDir = join(remoteDir, REMOTE_FILES.skillsDir);
-  await discoverSkills(skillsDir, remoteDir, skills, skipped);
-
-  // Discover settings and hooks
-  let settings: RemoteJsonAsset | undefined;
-  let hooks: RemoteJsonAsset | undefined;
-
-  const settingsPath = join(remoteDir, REMOTE_FILES.settings);
-  try {
-    const content = await readFile(settingsPath, 'utf8');
-    settings = { remotePath: REMOTE_FILES.settings, value: JSON.parse(content) as unknown };
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-      throw error;
-    }
-  }
-
-  const hooksPath = join(remoteDir, REMOTE_FILES.hooks);
-  try {
-    const content = await readFile(hooksPath, 'utf8');
-    hooks = { remotePath: REMOTE_FILES.hooks, value: JSON.parse(content) as unknown };
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-      throw error;
-    }
-  }
+      commands.push({
+        kind: 'command',
+        remotePath: relative(remoteDir, filePath),
+        relativeOutputPath: relative(join(remoteDir, REMOTE_FILES.commandsDir), filePath),
+        commandName: basename(filePath, '.md'),
+        content,
+      });
+    }),
+    discoverSkills(join(remoteDir, REMOTE_FILES.skillsDir), remoteDir, skills),
+  ]);
 
   return { rules, commands, skills, settings, hooks, skipped };
 }
 
+async function readJsonAsset(path: string, remotePath: string): Promise<RemoteJsonAsset | undefined> {
+  const content = await readFile(path, 'utf8').catch((err: NodeJS.ErrnoException) => {
+    if (err.code === 'ENOENT') return null;
+    throw err;
+  });
+
+  return content !== null ? { remotePath, value: JSON.parse(content) as unknown } : undefined;
+}
+
 async function readDirectoryIndex(dir: string): Promise<DirectoryIndex | null> {
-  const indexPath = join(dir, '.index.json');
+  const content = await readFile(join(dir, '.index.json'), 'utf8').catch((err: NodeJS.ErrnoException) => {
+    if (err.code === 'ENOENT') return null;
+    throw err;
+  });
 
-  try {
-    const content = await readFile(indexPath, 'utf8');
-    const raw = JSON.parse(content) as unknown;
-    const parsed = DirectoryIndexSchema.safeParse(raw);
+  if (content === null) return null;
 
-    if (!parsed.success) {
-      throw new Error(`Invalid .index.json at ${indexPath}: ${parsed.error.message}`);
-    }
+  const parsed = DirectoryIndexSchema.safeParse(JSON.parse(content) as unknown);
 
-    return parsed.data;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return null;
-    }
-    throw error;
+  if (!parsed.success) {
+    throw new Error(`Invalid .index.json at ${join(dir, '.index.json')}: ${parsed.error.message}`);
   }
+
+  return parsed.data;
 }
 
 async function walkDirectory(
@@ -118,110 +98,93 @@ async function walkDirectory(
   remoteDir: string,
   input: DiscoverRemoteTreeInput,
   skipped: Array<{ path: string; reason: string }>,
-  onFile: (filePath: string, relDir: string) => Promise<void>,
+  onFile: (filePath: string) => Promise<void>,
 ): Promise<void> {
-  let entries: string[];
+  const entries = await readdir(dir).catch((err: NodeJS.ErrnoException) => {
+    if (err.code === 'ENOENT') return null;
+    throw err;
+  });
 
-  try {
-    entries = await readdir(dir);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return;
-    }
-    throw error;
-  }
+  if (!entries) return;
 
-  for (const entry of entries.sort()) {
-    if (entry === '.index.json') {
-      continue;
-    }
+  await Promise.all(
+    entries
+      .filter((entry) => entry !== '.index.json')
+      .sort()
+      .map(async (entry) => {
+        const fullPath = join(dir, entry);
+        const fileStat = await stat(fullPath);
 
-    const fullPath = join(dir, entry);
-    const fileStat = await stat(fullPath);
-
-    if (fileStat.isDirectory()) {
-      const relPath = relative(remoteDir, fullPath);
-      const index = await readDirectoryIndex(fullPath);
-
-      // Check tag filtering
-      if (index?.tags?.length && input.tags.length > 0) {
-        const hasMatchingTag = index.tags.some((tag) => input.tags.includes(tag));
-        if (!hasMatchingTag) {
-          skipped.push({ path: relPath, reason: `tags did not match: ${index.tags.join(', ')}` });
-          continue;
+        if (fileStat.isFile()) {
+          await onFile(fullPath);
+          return;
         }
-      }
 
-      // Check requires
-      if (index?.requires) {
-        const result = evaluateRequires(index.requires, input.project);
-        if (!result.pass) {
-          skipped.push({ path: relPath, reason: result.reason ?? 'requires check failed' });
-          continue;
+        if (!fileStat.isDirectory()) return;
+
+        const relPath = relative(remoteDir, fullPath);
+        const index = await readDirectoryIndex(fullPath);
+
+        if (index?.tags?.length && input.tags.length > 0) {
+          const hasMatchingTag = index.tags.some((tag) => input.tags.includes(tag));
+          if (!hasMatchingTag) {
+            skipped.push({ path: relPath, reason: `tags did not match: ${index.tags.join(', ')}` });
+            return;
+          }
         }
-      }
 
-      await walkDirectory(fullPath, remoteDir, input, skipped, onFile);
-    } else if (fileStat.isFile()) {
-      await onFile(fullPath, dir);
-    }
-  }
+        if (index?.requires) {
+          const result = evaluateRequires(index.requires, input.project);
+          if (!result.pass) {
+            skipped.push({ path: relPath, reason: result.reason ?? 'requires check failed' });
+            return;
+          }
+        }
+
+        await walkDirectory(fullPath, remoteDir, input, skipped, onFile);
+      }),
+  );
 }
 
 async function discoverSkills(
   skillsDir: string,
   remoteDir: string,
   skills: RemoteSkillAsset[],
-  skipped: Array<{ path: string; reason: string }>,
 ): Promise<void> {
-  let entries: string[];
+  const entries = await readdir(skillsDir).catch((err: NodeJS.ErrnoException) => {
+    if (err.code === 'ENOENT') return null;
+    throw err;
+  });
 
-  try {
-    entries = await readdir(skillsDir);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return;
-    }
-    throw error;
-  }
+  if (!entries) return;
 
-  for (const entry of entries.sort()) {
-    const fullPath = join(skillsDir, entry);
-    const fileStat = await stat(fullPath);
+  await Promise.all(
+    entries.sort().map(async (entry) => {
+      const fullPath = join(skillsDir, entry);
+      const fileStat = await stat(fullPath);
 
-    if (!fileStat.isDirectory()) {
-      continue;
-    }
+      if (!fileStat.isDirectory()) return;
 
-    const skillMdPath = join(fullPath, 'SKILL.md');
+      const skillMdStat = await stat(join(fullPath, 'SKILL.md')).catch((err: NodeJS.ErrnoException) => {
+        if (err.code === 'ENOENT') return null;
+        throw err;
+      });
 
-    try {
-      await stat(skillMdPath);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        continue;
-      }
-      throw error;
-    }
+      if (!skillMdStat) return;
 
-    const name = entry;
-    const generatedName = `remote-${name}`;
-    const remotePath = relative(remoteDir, skillMdPath);
-    const relativeOutputPath = `${generatedName}/SKILL.md`;
+      const generatedName = `remote-${entry}`;
+      const files = await collectSkillFiles(fullPath, fullPath, remoteDir, generatedName);
 
-    // Collect all files in the skill directory recursively
-    const files: RemoteSkillAsset['files'] = [];
-    await collectSkillFiles(fullPath, fullPath, remoteDir, generatedName, files);
-
-    skills.push({
-      kind: 'skill',
-      remotePath,
-      relativeOutputPath,
-      name,
-      generatedName,
-      files,
-    });
-  }
+      skills.push({
+        kind: 'skill',
+        remotePath: relative(remoteDir, join(fullPath, 'SKILL.md')),
+        relativeOutputPath: `${generatedName}/SKILL.md`,
+        name: entry,
+        generatedName,
+        files,
+      });
+    }),
+  );
 }
 
 async function collectSkillFiles(
@@ -229,24 +192,28 @@ async function collectSkillFiles(
   skillRoot: string,
   remoteDir: string,
   generatedName: string,
-  files: RemoteSkillAsset['files'],
-): Promise<void> {
+): Promise<RemoteSkillFile[]> {
   const entries = await readdir(dir);
 
-  for (const entry of entries.sort()) {
-    const fullPath = join(dir, entry);
-    const fileStat = await stat(fullPath);
+  const results = await Promise.all(
+    entries.sort().map(async (entry): Promise<RemoteSkillFile[]> => {
+      const fullPath = join(dir, entry);
+      const fileStat = await stat(fullPath);
 
-    if (fileStat.isDirectory()) {
-      await collectSkillFiles(fullPath, skillRoot, remoteDir, generatedName, files);
-    } else if (fileStat.isFile()) {
+      if (fileStat.isDirectory()) {
+        return collectSkillFiles(fullPath, skillRoot, remoteDir, generatedName);
+      }
+
       const content = await readFile(fullPath, 'utf8');
-      const relativeToSkillRoot = relative(skillRoot, fullPath);
-      files.push({
-        remotePath: relative(remoteDir, fullPath),
-        relativeOutputPath: `${generatedName}/${relativeToSkillRoot}`,
-        content,
-      });
-    }
-  }
+      return [
+        {
+          remotePath: relative(remoteDir, fullPath),
+          relativeOutputPath: `${generatedName}/${relative(skillRoot, fullPath)}`,
+          content,
+        },
+      ];
+    }),
+  );
+
+  return results.flat();
 }
