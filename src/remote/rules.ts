@@ -1,12 +1,7 @@
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-
 import fg from 'fast-glob';
 import matter from 'gray-matter';
 import { z } from 'zod';
 
-import { REMOTE_FILES } from '../config/paths.js';
-import { assertSafeRemoteRead } from '../config/safe-paths.js';
 import { type ProjectFacts, type Requires, evaluateRequires, parseRequires } from './requires.js';
 
 const RuleSchema = z.object({
@@ -63,28 +58,6 @@ export function parseRule(source: string, content: string): Rule {
   }
 
   return { ...parsed.data, source, body: parsedMatter.content };
-}
-
-// Transitional legacy loader. New remote repositories are discovered through remote/tree.ts.
-export async function loadRules(remoteDir: string): Promise<Rule[]> {
-  const rulesGlob = 'rules/**/*.md';
-  const entries = await fg(rulesGlob, { cwd: remoteDir, onlyFiles: true, dot: false });
-  const rules = await Promise.all(
-    entries
-      .sort()
-      .map(async (entry) => parseRule(entry, await readFile(assertSafeRemoteRead(remoteDir, entry), 'utf8'))),
-  );
-
-  const seen = new Set<string>();
-
-  for (const rule of rules) {
-    if (seen.has(rule.id)) {
-      throw new Error(`Duplicate rule id: ${rule.id}`);
-    }
-    seen.add(rule.id);
-  }
-
-  return rules;
 }
 
 /** Selects rules by tag match; excluded IDs and requires checks run last. */
