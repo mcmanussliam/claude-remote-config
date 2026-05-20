@@ -19,7 +19,6 @@ export const PLUGIN_DATA = {
 } as const;
 
 export const REMOTE_FILES = {
-  claudeDir: '.claude',
   rulesDir: '.claude/rules',
   commandsDir: '.claude/commands',
   skillsDir: '.claude/skills',
