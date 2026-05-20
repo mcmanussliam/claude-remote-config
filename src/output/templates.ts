@@ -18,4 +18,3 @@ export function initSummaryTemplate(
 
   return `claude-remote-config synced ${manifest.remote} at ${resolvedCommit} (${counts})`;
 }
-
