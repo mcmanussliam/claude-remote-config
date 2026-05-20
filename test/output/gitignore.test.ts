@@ -11,7 +11,8 @@ describe('ensureGitignoreEntries', () => {
     expect(added).toBe(true);
     const content = await readFile(join(dir, '.gitignore'), 'utf8');
     expect(content).toContain('# claude-remote-config generated files');
-    expect(content).toContain('.claude-remote-config/generated/');
+    expect(content).toContain('.claude/commands/remote/');
+    expect(content).toContain('.claude/skills/remote-*/');
   });
 
   it('appends to an existing .gitignore without duplicating', async () => {

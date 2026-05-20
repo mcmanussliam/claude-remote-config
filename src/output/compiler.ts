@@ -1,6 +1,4 @@
-import { stringify } from 'yaml';
-
-import { memoryTemplate, ruleGeneratedComment, type MemoryTemplateInput } from './templates.js';
+import { ruleGeneratedComment } from './templates.js';
 
 /** Replaces {{ key }} placeholders. Throws on any missing key. */
 export function substituteParams(content: string, params: Record<string, unknown>): string {
@@ -15,25 +13,20 @@ export function substituteParams(content: string, params: Record<string, unknown
   });
 }
 
-export type CompileMemoryInput = MemoryTemplateInput;
-
-export function compileMemory(input: CompileMemoryInput): string {
-  return memoryTemplate(input);
-}
-
 export interface CompileRuleInput {
   id: string;
-  version: string;
   paths?: string[];
   body: string;
-  params: Record<string, unknown>;
 }
 
 export function compileRule(input: CompileRuleInput): string {
-  const frontmatter = input.paths?.length ? `---\n${stringify({ paths: input.paths }).trim()}\n---\n\n` : '';
-  const body = substituteParams(input.body, input.params).trim();
+  const frontmatter = input.paths?.length ? `${formatPathsFrontmatter(input.paths)}\n\n` : '';
+  return `${frontmatter}${ruleGeneratedComment(input.id)}\n\n${input.body.trim()}\n`;
+}
 
-  return `${frontmatter}${ruleGeneratedComment(input.id, input.version)}\n\n${body}\n`;
+function formatPathsFrontmatter(paths: string[]): string {
+  const lines = ['---', 'paths:', ...paths.map((path) => `  - ${JSON.stringify(path)}`), '---'];
+  return lines.join('\n');
 }
 
 export function generatedRuleFilename(index: number, id: string): string {

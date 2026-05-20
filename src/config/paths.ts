@@ -1,10 +1,11 @@
 export const PROJECT_FILES = {
-  manifest: '.claude-remote-config.yml',
+  manifest: '.claude-remote-config.json',
+  legacyManifest: '.claude-remote-config.yml',
   gitignore: '.gitignore',
-  generatedMemory: '.claude-remote-config/generated/CLAUDE.md',
-  generatedMemoryDir: '.claude-remote-config/generated',
   generatedCacheDir: '.claude-remote-config/cache',
-  generatedRulesDir: '.claude/rules/claude-remote-config',
+  generatedRulesDir: '.claude/rules/remote',
+  generatedCommandsDir: '.claude/commands/remote',
+  generatedSkillsPrefix: '.claude/skills/remote-',
   settingsLocal: '.claude/settings.local.json',
   mcpLocal: '.claude/mcp.local.json',
   agentsLocalDir: '.claude/agents.local',
@@ -17,8 +18,13 @@ export const PLUGIN_DATA = {
 } as const;
 
 export const REMOTE_FILES = {
-  config: 'claude-remote-manifest.yml',
-  rulesGlob: 'rules/**/*.md',
+  claudeDir: '.claude',
+  rootIndex: '.claude/index.json',
+  rulesDir: '.claude/rules',
+  commandsDir: '.claude/commands',
+  skillsDir: '.claude/skills',
+  settings: '.claude/settings.json',
+  hooks: '.claude/hooks.json',
 } as const;
 
 export const CLAUDE_HOOKS = {

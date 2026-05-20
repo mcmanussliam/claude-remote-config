@@ -4,14 +4,18 @@ import { PROJECT_FILES } from './paths.js';
 
 const approvedExact = new Set<string>([
   PROJECT_FILES.generatedRulesDir,
+  PROJECT_FILES.generatedCommandsDir,
   PROJECT_FILES.settingsLocal,
+  PROJECT_FILES.hooksLocal,
   PROJECT_FILES.gitignore,
 ]);
 
 const approvedPrefixes = [
-  `${PROJECT_FILES.generatedMemoryDir}/`,
   `${PROJECT_FILES.generatedCacheDir}/`,
   `${PROJECT_FILES.generatedRulesDir}/`,
+  `${PROJECT_FILES.generatedCommandsDir}/`,
+  `${PROJECT_FILES.generatedSkillsPrefix}`,
+  '.claude/skills/remote-',
 ];
 
 export function assertInside(root: string, target: string, label: string): string {
@@ -55,13 +59,13 @@ export function assertSafeRemoteRead(remoteDir: string, relativePath: string): s
   return target;
 }
 
-export function setupWritePath(projectDir: string, relativePath: string): string {
-  const target = resolve(projectDir, relativePath);
+export function setupWritePath(projectDir: string, absolutePath: string): string {
+  const target = resolve(absolutePath);
   const rel = relative(resolve(projectDir), target).replaceAll('\\', '/');
 
   if (rel === PROJECT_FILES.manifest || rel === PROJECT_FILES.gitignore) {
     return target;
   }
 
-  throw new Error(`Path is not an approved setup write location: ${relativePath}`);
+  throw new Error(`Path is not an approved setup write location: ${absolutePath}`);
 }

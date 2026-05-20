@@ -3,8 +3,11 @@ import { assertSafeProjectWrite } from '../../src/config/safe-paths.js';
 
 describe('safe paths', () => {
   it('allows approved generated paths', () => {
-    expect(() => assertSafeProjectWrite('/repo', '/repo/.claude-remote-config/generated/CLAUDE.md')).not.toThrow();
+    expect(() => assertSafeProjectWrite('/repo', '/repo/.claude-remote-config/cache/something')).not.toThrow();
     expect(() => assertSafeProjectWrite('/repo', '/repo/.claude/settings.local.json')).not.toThrow();
+    expect(() => assertSafeProjectWrite('/repo', '/repo/.claude/rules/remote/strict.md')).not.toThrow();
+    expect(() => assertSafeProjectWrite('/repo', '/repo/.claude/commands/remote/test.md')).not.toThrow();
+    expect(() => assertSafeProjectWrite('/repo', '/repo/.claude/skills/remote-review/SKILL.md')).not.toThrow();
   });
 
   it('rejects traversal and shared config paths', () => {

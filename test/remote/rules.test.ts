@@ -87,7 +87,7 @@ title: Error handling
 version: 1.0.0
 tags: [language:typescript]
 requires:
-  files_all:
+  filesAll:
     - tsconfig.json
 ---
 Body`)

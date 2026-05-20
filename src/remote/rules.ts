@@ -7,19 +7,7 @@ import { z } from 'zod';
 
 import { REMOTE_FILES } from '../config/paths.js';
 import { assertSafeRemoteRead } from '../config/safe-paths.js';
-
-const RequiresSchema = z
-  .object({
-    files_any: z.array(z.string()).optional(),
-    files_all: z.array(z.string()).optional(),
-    package_json_any: z
-      .object({
-        dependencies: z.array(z.string()).optional(),
-        devDependencies: z.array(z.string()).optional(),
-      })
-      .optional(),
-  })
-  .optional();
+import { evaluateRequires, parseRequires, type ProjectFacts, type Requires } from './requires.js';
 
 const RuleSchema = z.object({
   id: z.string().min(1),
@@ -29,7 +17,7 @@ const RuleSchema = z.object({
   tags: z.array(z.string()).default([]),
   paths: z.array(z.string()).default([]),
   priority: z.number().default(100),
-  requires: RequiresSchema,
+  requires: z.unknown().optional().transform(parseRequires),
   conflicts_with: z.array(z.string()).default([]),
   parameters: z
     .record(
@@ -50,15 +38,7 @@ export interface Rule extends z.infer<typeof RuleSchema> {
   paths: string[];
 }
 
-export interface ProjectFacts {
-  /** Set of relative file paths found in the project (depth-limited). */
-  files: Set<string>;
-  /** Parsed package.json content, or empty object if absent. */
-  packageJson: {
-    dependencies?: Record<string, unknown>;
-    devDependencies?: Record<string, unknown>;
-  };
-}
+export type { ProjectFacts };
 
 export interface RuleSelectionInput {
   /** Tags added by the project's manifest include.tags. */
@@ -85,8 +65,10 @@ export function parseRule(source: string, content: string): Rule {
   return { ...parsed.data, source, body: parsedMatter.content };
 }
 
+// Transitional legacy loader. New remote repositories are discovered through remote/tree.ts.
 export async function loadRules(remoteDir: string): Promise<Rule[]> {
-  const entries = await fg(REMOTE_FILES.rulesGlob, { cwd: remoteDir, onlyFiles: true, dot: false });
+  const rulesGlob = 'rules/**/*.md';
+  const entries = await fg(rulesGlob, { cwd: remoteDir, onlyFiles: true, dot: false });
   const rules = await Promise.all(
     entries.sort().map(async (entry) => parseRule(entry, await readFile(assertSafeRemoteRead(remoteDir, entry), 'utf8'))),
   );
@@ -143,31 +125,7 @@ export function selectRules(input: RuleSelectionInput): RuleSelection {
 }
 
 function requiresPass(rule: Rule, project: ProjectFacts): boolean {
-  if (!rule.requires) {
-    return true;
-  }
-
-  const { files_any: filesAny, files_all: filesAll, package_json_any: packageJsonAny } = rule.requires;
-
-  if (filesAny?.length && !filesAny.some((file) => project.files.has(file))) {
-    return false;
-  }
-
-  if (filesAll?.length && !filesAll.every((file) => project.files.has(file))) {
-    return false;
-  }
-
-  if (packageJsonAny) {
-    const checks = [
-      ...(packageJsonAny.dependencies ?? []).map((name) => Boolean(project.packageJson.dependencies?.[name])),
-      ...(packageJsonAny.devDependencies ?? []).map((name) => Boolean(project.packageJson.devDependencies?.[name])),
-    ];
-    if (checks.length && !checks.some(Boolean)) {
-      return false;
-    }
-  }
-
-  return true;
+  return evaluateRequires(rule.requires, project).pass;
 }
 
 function detectConflicts(rules: Rule[]): void {

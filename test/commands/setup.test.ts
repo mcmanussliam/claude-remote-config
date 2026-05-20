@@ -10,9 +10,12 @@ describe('setupProject', () => {
 
     await setupProject({ projectDir: dir, remote: '../rules' });
 
-    const manifest = await readFile(join(dir, '.claude-remote-config.yml'), 'utf8');
-    expect(manifest).toContain('remote: ../rules');
-    expect(manifest).not.toContain('profile');
+    const manifest = JSON.parse(await readFile(join(dir, '.claude-remote-config.json'), 'utf8')) as {
+      remote: string;
+      ref?: string;
+    };
+    expect(manifest.remote).toBe('../rules');
+    expect(manifest.ref).toBeUndefined();
     await expect(readFile(join(dir, '.gitignore'), 'utf8')).resolves.toContain('# claude-remote-config generated files');
     await expect(readFile(join(dir, '.claude/CLAUDE.md'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
   });
@@ -22,7 +25,11 @@ describe('setupProject', () => {
 
     await setupProject({ projectDir: dir, remote: '../rules', ref: 'v2.0.0' });
 
-    await expect(readFile(join(dir, '.claude-remote-config.yml'), 'utf8')).resolves.toContain('ref: v2.0.0');
+    const manifest = JSON.parse(await readFile(join(dir, '.claude-remote-config.json'), 'utf8')) as {
+      remote: string;
+      ref?: string;
+    };
+    expect(manifest.ref).toBe('v2.0.0');
   });
 
   it('does not overwrite existing .claude/CLAUDE.md', async () => {

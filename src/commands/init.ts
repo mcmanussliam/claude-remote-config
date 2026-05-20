@@ -1,14 +1,13 @@
-import { access, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
+import { access } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
+
 import { loadManifest, type Manifest } from '../config/manifest.js';
-import { assertSafeProjectWrite, assertSafeRemoteRead } from '../config/safe-paths.js';
 import { PROJECT_FILES } from '../config/paths.js';
 import { syncRemote } from '../remote/git.js';
-import { loadConfig } from '../remote/profile.js';
-import { collectProjectFacts, loadRules, resolveRuleParams, selectRules, type RuleSelection } from '../remote/rules.js';
-import { loadMemoryFragments } from '../remote/memory.js';
-import { compileMemory, compileRule, generatedRuleFilename } from '../output/compiler.js';
-import { mergeSettings, type JsonValue } from '../output/settings.js';
+import { collectProjectFacts } from '../remote/rules.js';
+import { discoverRemoteTree } from '../remote/tree.js';
+import type { RemoteTreeSelection } from '../remote/assets.js';
+import { materializeRemoteAssets } from '../output/assets.js';
 import { ensureGitignoreEntries } from '../output/gitignore.js';
 import { hookFallbackWarning, initSummaryTemplate } from '../output/templates.js';
 
@@ -28,7 +27,7 @@ export interface InitOptions {
 export interface InitResult {
   manifest: Manifest | null;
   summary: string;
-  selection?: RuleSelection;
+  selection?: RemoteTreeSelection;
   resolvedCommit?: string;
 }
 
@@ -69,31 +68,21 @@ async function initWithManifest(
     offline: options.offline,
   });
 
-  const [config, rules, projectFacts] = await Promise.all([
-    loadConfig(remote.sourceDir),
-    loadRules(remote.sourceDir),
-    collectProjectFacts(options.projectDir),
-  ]);
-
-  const selection = selectRules({
-    manifestTags: manifest.include.tags,
-    excludedIds: manifest.exclude.rules,
-    rules,
+  const projectFacts = await collectProjectFacts(options.projectDir);
+  const selection = await discoverRemoteTree(remote.sourceDir, {
+    tags: manifest.tags,
     project: projectFacts,
   });
 
   if (!options.dryRun) {
-    await Promise.all([
-      manifest.output.memory
-        ? materializeMemory(options.projectDir, remote.sourceDir, config.memory.include, manifest, remote.resolvedCommit, selection)
-        : Promise.resolve(),
-      manifest.output.rules
-        ? materializeRules(options.projectDir, remote.sourceDir, selection, manifest)
-        : Promise.resolve(),
-      manifest.output.settings_local
-        ? materializeSettings(options.projectDir, remote.sourceDir, config.settings_local.include)
-        : Promise.resolve(),
-    ]);
+    await materializeRemoteAssets(options.projectDir, {
+      ...selection,
+      rules: manifest.output.rules ? selection.rules : [],
+      commands: manifest.output.commands ? selection.commands : [],
+      skills: manifest.output.skills ? selection.skills : [],
+      settings: manifest.output.settingsLocal ? selection.settings : undefined,
+      hooks: manifest.output.hooksLocal ? selection.hooks : undefined,
+    });
 
     if (options.gitignore !== false) {
       await ensureGitignoreEntries(options.projectDir);
@@ -104,79 +93,26 @@ async function initWithManifest(
     manifest,
     selection,
     resolvedCommit: remote.resolvedCommit,
-    summary: initSummaryTemplate(manifest, remote.resolvedCommit),
+    summary: initSummaryTemplate(manifest, remote.resolvedCommit, selection),
   };
 }
 
-async function materializeMemory(
-  projectDir: string,
-  sourceDir: string,
-  memorySources: string[],
-  manifest: Manifest,
-  resolvedCommit: string,
-  selection: RuleSelection,
-): Promise<void> {
-  const fragments = await loadMemoryFragments(sourceDir, memorySources, manifest.params);
-  await writeProjectFile(
-    projectDir,
-    PROJECT_FILES.generatedMemory,
-    compileMemory({
-      remote: manifest.remote,
-      requestedRef: manifest.ref,
-      resolvedCommit,
-      memorySources: fragments.map((f) => f.source),
-      loadedRules: selection.selected.map((rule) => `${rule.id}@${rule.version}`),
-      contents: fragments.map((f) => f.content),
-    }),
-  );
-}
-
-async function materializeRules(
-  projectDir: string,
-  sourceDir: string,
-  selection: RuleSelection,
-  manifest: Manifest,
-): Promise<void> {
-  const rulesDir = assertSafeProjectWrite(projectDir, join(projectDir, PROJECT_FILES.generatedRulesDir));
-  await rm(rulesDir, { recursive: true, force: true });
-  await mkdir(rulesDir, { recursive: true });
-
-  await Promise.all(
-    selection.selected.map((rule, index) => {
-      const params = resolveRuleParams(rule, manifest.params);
-      return writeProjectFile(
-        projectDir,
-        `${PROJECT_FILES.generatedRulesDir}/${generatedRuleFilename(index, rule.id)}`,
-        compileRule({ id: rule.id, version: rule.version, paths: rule.paths, body: rule.body, params }),
-      );
-    }),
-  );
-}
-
-async function materializeSettings(projectDir: string, sourceDir: string, sources: string[]): Promise<void> {
-  const settings = await loadSettingsFragments(sourceDir, sources);
-  await writeProjectFile(projectDir, PROJECT_FILES.settingsLocal, `${JSON.stringify(mergeSettings(settings), null, 2)}\n`);
-}
-
-async function loadSettingsFragments(remoteDir: string, sources: string[]): Promise<JsonValue[]> {
-  return Promise.all(
-    sources.map(async (source) => JSON.parse(await readFile(assertSafeRemoteRead(remoteDir, source), 'utf8')) as JsonValue),
-  );
-}
-
-async function writeProjectFile(projectDir: string, relativePath: string, content: string): Promise<void> {
-  const target = assertSafeProjectWrite(projectDir, join(projectDir, relativePath));
-  await mkdir(dirname(target), { recursive: true });
-  await writeFile(target, content);
-}
-
 async function hasGeneratedOutput(projectDir: string): Promise<boolean> {
-  try {
-    await access(join(projectDir, PROJECT_FILES.generatedMemory));
-    return true;
-  } catch {
-    return false;
+  for (const relativePath of [
+    PROJECT_FILES.generatedRulesDir,
+    PROJECT_FILES.generatedCommandsDir,
+    '.claude/skills',
+    PROJECT_FILES.settingsLocal,
+    PROJECT_FILES.hooksLocal,
+  ]) {
+    try {
+      await access(join(projectDir, relativePath));
+      return true;
+    } catch {
+      continue;
+    }
   }
+  return false;
 }
 
 function formatError(error: unknown): string {

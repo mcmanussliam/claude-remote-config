@@ -4,7 +4,6 @@ import { dirname, join } from 'node:path';
 import { ensureGitignoreEntries } from '../output/gitignore.js';
 import { PROJECT_FILES } from '../config/paths.js';
 import { setupWritePath } from '../config/safe-paths.js';
-import { setupManifestTemplate } from '../output/templates.js';
 
 export interface SetupOptions {
   projectDir: string;
@@ -13,7 +12,21 @@ export interface SetupOptions {
 }
 
 export async function setupProject(options: SetupOptions): Promise<void> {
-  await writeIfMissing(setupWritePath(options.projectDir, PROJECT_FILES.manifest), setupManifestTemplate(options));
+  const manifest = {
+    remote: options.remote,
+    ...(options.ref ? { ref: options.ref } : {}),
+    output: {
+      rules: true,
+      commands: false,
+      skills: false,
+      settingsLocal: false,
+      hooksLocal: false,
+    },
+    tags: [],
+  };
+
+  const manifestPath = setupWritePath(options.projectDir, join(options.projectDir, PROJECT_FILES.manifest));
+  await writeIfMissing(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   await ensureGitignoreEntries(options.projectDir);
 }
 

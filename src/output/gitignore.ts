@@ -4,9 +4,10 @@ import { join } from 'node:path';
 import { PROJECT_FILES } from '../config/paths.js';
 
 export const gitignoreBlock = `# claude-remote-config generated files
-${PROJECT_FILES.generatedMemoryDir}/
 ${PROJECT_FILES.generatedCacheDir}/
 ${PROJECT_FILES.generatedRulesDir}/
+${PROJECT_FILES.generatedCommandsDir}/
+${PROJECT_FILES.generatedSkillsPrefix}*/
 
 # claude-remote-config generated local Claude Code config
 ${PROJECT_FILES.settingsLocal}

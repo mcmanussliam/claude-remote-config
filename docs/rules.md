@@ -1,54 +1,23 @@
 # Rules
 
-This guide is for remote config authors writing Markdown rule files under `rules/**/*.md`.
+This guide is for remote config authors writing Markdown rule files under `.claude/rules/**/*.md`.
 
 ## Simple rule
 
-```markdown
----
-id: repo.hygiene
-title: Repository hygiene
-version: 1.0.0
-profiles:
-  - node-service
-priority: 20
----
+Rules are Markdown files. No frontmatter is required unless you need Claude Code path scoping:
 
+```markdown
 Keep generated files out of committed source unless the project explicitly documents otherwise.
 ```
 
-`id`, `title`, and `version` are required.
-
-## Frontmatter reference
-
-`status` is optional metadata.
-
-`profiles` selects the rule when the consuming project uses any listed profile.
-
-`tags` selects the rule when the profile or project manifest includes a matching tag.
-
-`paths` is copied to the generated rule file as Claude Code native rule frontmatter.
-
-`priority` sorts selected rules. Lower numbers are written first. The default is `100`.
-
-`requires` skips the rule unless project facts match.
-
-`conflicts_with` fails generation if another selected rule has a conflicting ID.
-
-`parameters` defines optional defaults and allowed values for placeholders.
-
 ## Path-scoped rule
+
+Use Markdown frontmatter only for Claude Code native `paths` scoping:
 
 ```markdown
 ---
-id: typescript.error-handling
-title: TypeScript error handling
-version: 1.2.0
-tags:
-  - language:typescript
 paths:
   - "src/**/*.ts"
-priority: 10
 ---
 
 Return typed errors at module boundaries and avoid throwing raw strings.
@@ -56,85 +25,46 @@ Return typed errors at module boundaries and avoid throwing raw strings.
 
 The generated rule keeps only the `paths` frontmatter and a generated source comment.
 
-## Rule with requirements
+## Directory requirements
 
-```markdown
----
-id: testing.vitest
-title: Vitest testing
-version: 1.0.0
-tags:
-  - concern:testing
-requires:
-  files_any:
-    - vitest.config.ts
-    - vitest.config.mts
-  package_json_any:
-    devDependencies:
-      - vitest
----
+Requirements live in `index.json` files in the directory, not in individual rule files:
 
-Use Vitest for unit tests in this repository.
+```json
+{
+  "requires": {
+    "filesAll": ["tsconfig.json"]
+  },
+  "tags": ["language:typescript"]
+}
 ```
 
 Supported `requires` checks:
 
-```yaml
-requires:
-  files_any:
-    - tsconfig.json
-  files_all:
-    - package.json
-    - tsconfig.json
-  package_json_any:
-    dependencies:
-      - react
-    devDependencies:
-      - vitest
+```json
+{
+  "filesAny": ["vitest.config.ts", "vitest.config.mts"],
+  "filesAll": ["package.json", "tsconfig.json"],
+  "packageJsonAny": {
+    "dependencies": ["react"],
+    "devDependencies": ["vitest"]
+  }
+}
 ```
 
-## Parameterized rule
+If a directory's requirements fail, no files in that directory (or any subdirectory) are included.
 
-```markdown
----
-id: javascript.package-manager
-title: Package manager
-version: 1.0.0
-tags:
-  - language:javascript
-parameters:
-  package_manager:
-    default: npm
-    allowed:
-      - npm
-      - pnpm
-      - yarn
----
+## Directory tags
 
-Use {{ package_manager }} for package installation and scripts.
+Tags control whether a directory subtree is included based on the consuming project's `tags` field:
+
+```json
+{
+  "tags": ["concern:testing"]
+}
 ```
 
-The consuming project can override the value:
-
-```yaml
-params:
-  package_manager: pnpm
-```
-
-If a placeholder has no value and no default, generation fails with a missing parameter error.
-
-## Selection order
-
-Rules are selected in this order:
-
-1. Required rule IDs from the profile.
-2. Rules matching the selected profile.
-3. Rules matching profile tags or manifest tags.
-4. Explicit exclusions from `exclude.rules`.
-5. `requires` checks.
-6. Conflict detection.
-7. Sort by `priority`, then rule ID, then source path.
+A consuming project with `"tags": ["concern:testing"]` will include this directory. A project with no matching tags will skip it. Directories without tags are always included when requirements pass.
 
 ## Example rule set
 
-See [mcmanussliam/claude-config](https://github.com/mcmanussliam/claude-config) for a TypeScript-focused rule set covering repository hygiene, strict typing, error handling, testing, security, and package management.
+See [mcmanussliam/claude-config](https://github.com/mcmanussliam/claude-config) for a TypeScript-focused rule set.

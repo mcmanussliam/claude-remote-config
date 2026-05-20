@@ -1,0 +1,11 @@
+{
+  "remote": "https://github.com/mcmanussliam/claude-config",
+  "output": {
+    "rules": true,
+    "commands": false,
+    "skills": false,
+    "settingsLocal": true,
+    "hooksLocal": false
+  },
+  "tags": []
+}

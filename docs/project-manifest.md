@@ -1,30 +1,22 @@
 # Project Manifest
 
-This guide is for project users configuring `.claude-remote-config.yml` in a consuming repository.
+This guide is for project users configuring `.claude-remote-config.json` in a consuming repository.
 
 ## Example
 
-```yaml
-remote: git@example.com:your-org/claude-config.git
-ref: v1.0.0
-profile: node-service
-
-materialize:
-  memory: true
-  rules: true
-  settings_local: true
-
-params:
-  package_manager: pnpm
-  test_command: npm test
-
-include:
-  tags:
-    - concern:security
-
-exclude:
-  rules:
-    - testing.playwright
+```json
+{
+  "remote": "git@example.com:your-org/claude-config.git",
+  "ref": "v1.0.0",
+  "output": {
+    "rules": true,
+    "commands": true,
+    "skills": true,
+    "settingsLocal": true,
+    "hooksLocal": true
+  },
+  "tags": ["concern:testing"]
+}
 ```
 
 ## Fields
@@ -33,28 +25,27 @@ exclude:
 
 `ref` is the tag, branch, or commit to check out. Tags or commit SHAs are best for reproducible configuration.
 
-`profile` selects `profiles/<profile>.yml` from the remote repository.
+`output` controls which generated assets are written. Default values are:
 
-`materialize.memory` controls whether `.claude-remote-config/generated/CLAUDE.md` is written.
+```json
+{
+  "rules": true,
+  "commands": false,
+  "skills": false,
+  "settingsLocal": false,
+  "hooksLocal": false
+}
+```
 
-`materialize.rules` controls whether selected rules are written to `.claude/rules/claude-remote-config/`.
-
-`materialize.settings_local` controls whether `.claude/settings.local.json` is generated from remote settings fragments.
-
-`params` provides values for `{{ parameter_name }}` placeholders in memory and rules.
-
-`include.tags` adds rule tags to select in addition to the profile's own tags.
-
-`exclude.rules` removes selected rules by ID. Required rules can still fail if their `requires` checks do not pass.
+`tags` selects directory subtrees from the remote. A directory with tags is only included if the project manifest tags contain at least one matching tag.
 
 ## What to commit
 
 Commit:
 
 ```text
-.claude-remote-config.yml
-.claude-remote-config.lock.yml
+.claude-remote-config.json
 .gitignore
 ```
 
-Do not normally commit generated cache, generated memory, generated rules, or `.claude/settings.local.json`.
+Do not normally commit generated cache, generated rules, generated commands, generated skills, or local Claude Code config files.

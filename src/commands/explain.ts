@@ -5,8 +5,10 @@ export function formatExplain(result: InitResult): string {
     return 'claude-remote-config is not configured for this project.\n';
   }
 
-  const selected = result.selection.selected.map((rule) => `selected ${rule.id} from ${rule.source}`).join('\n');
-  const skipped = result.selection.skipped.map((item) => `skipped ${item.id}: ${item.reason}`).join('\n');
+  const rules = result.selection.rules.map((rule) => `selected rule ${rule.remotePath}`).join('\n');
+  const commands = result.selection.commands.map((cmd) => `selected command ${cmd.remotePath}`).join('\n');
+  const skills = result.selection.skills.map((skill) => `selected skill ${skill.name}`).join('\n');
+  const skipped = result.selection.skipped.map((item) => `skipped ${item.path}: ${item.reason}`).join('\n');
 
-  return [selected, skipped].filter(Boolean).join('\n') + '\n';
+  return [rules, commands, skills, skipped].filter(Boolean).join('\n') + '\n';
 }
