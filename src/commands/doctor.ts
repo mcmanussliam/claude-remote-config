@@ -13,16 +13,21 @@ export async function doctorProject(projectDir: string): Promise<string> {
 
   const checks: string[] = [`manifest: ok (${manifest.remote})`];
 
-  const [gitignoreExists, generatedRulesExists, generatedCommandsExists, settingsLocalExists, hooksLocalExists] =
-    await Promise.all([
-      exists(join(projectDir, PROJECT_FILES.gitignore)),
-      exists(join(projectDir, PROJECT_FILES.generatedRulesDir)),
-      exists(join(projectDir, PROJECT_FILES.generatedCommandsDir)),
-      exists(join(projectDir, PROJECT_FILES.settingsLocal)),
-      exists(join(projectDir, PROJECT_FILES.hooksLocal)),
-    ]);
-
-  const generatedSkillsExists = await hasGeneratedSkills(projectDir);
+  const [
+    gitignoreExists,
+    generatedRulesExists,
+    generatedCommandsExists,
+    generatedSkillsExists,
+    settingsLocalExists,
+    hooksLocalExists,
+  ] = await Promise.all([
+    exists(join(projectDir, PROJECT_FILES.gitignore)),
+    exists(join(projectDir, PROJECT_FILES.generatedRulesDir)),
+    exists(join(projectDir, PROJECT_FILES.generatedCommandsDir)),
+    hasGeneratedSkills(projectDir),
+    exists(join(projectDir, PROJECT_FILES.settingsLocal)),
+    exists(join(projectDir, PROJECT_FILES.hooksLocal)),
+  ]);
 
   checks.push(
     gitignoreExists ? 'gitignore: present' : 'gitignore: missing',
