@@ -27,7 +27,7 @@ The generated rule keeps only the `paths` frontmatter and a generated source com
 
 ## Directory requirements
 
-Requirements live in `index.json` files in the directory, not in individual rule files:
+Requirements live in `.index.json` files in the directory, not in individual rule files:
 
 ```json
 {
@@ -44,10 +44,6 @@ Supported `requires` checks:
 {
   "filesAny": ["vitest.config.ts", "vitest.config.mts"],
   "filesAll": ["package.json", "tsconfig.json"],
-  "packageJsonAny": {
-    "dependencies": ["react"],
-    "devDependencies": ["vitest"]
-  }
 }
 ```
 

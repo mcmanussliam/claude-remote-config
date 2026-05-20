@@ -3,10 +3,6 @@ import { evaluateRequires, parseRequires, type ProjectFacts } from '../../src/re
 
 const project: ProjectFacts = {
   files: new Set(['package.json', 'tsconfig.json', 'vitest.config.ts']),
-  packageJson: {
-    dependencies: { typescript: '5.0.0' },
-    devDependencies: { vitest: '2.1.9' },
-  },
 };
 
 describe('requires', () => {
@@ -14,10 +10,6 @@ describe('requires', () => {
     const requires = parseRequires({
       filesAll: ['package.json', 'tsconfig.json'],
       filesAny: ['vitest.config.ts', 'vitest.config.mts'],
-      packageJsonAny: {
-        dependencies: ['react'],
-        devDependencies: ['vitest'],
-      },
     });
 
     expect(evaluateRequires(requires, project)).toEqual({ pass: true });
@@ -38,15 +30,6 @@ describe('requires', () => {
     expect(evaluateRequires(requires, project)).toEqual({
       pass: false,
       reason: 'none of required files exist: jest.config.js, jest.config.ts',
-    });
-  });
-
-  it('fails with a package dependency reason', () => {
-    const requires = parseRequires({ packageJsonAny: { dependencies: ['django'] } });
-
-    expect(evaluateRequires(requires, project)).toEqual({
-      pass: false,
-      reason: 'none of required package.json dependencies exist: django',
     });
   });
 });

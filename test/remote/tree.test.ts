@@ -23,11 +23,11 @@ describe('discoverRemoteTree', () => {
     const dir = await mkdtemp(join(tmpdir(), 'claude-remote-tree-'));
 
     await write(
-      join(dir, '.claude/index.json'),
+      join(dir, '.claude/.index.json'),
       JSON.stringify({ schema: 'claude-remote-config/v2' }),
     );
     await write(
-      join(dir, '.claude/rules/typescript/index.json'),
+      join(dir, '.claude/rules/typescript/.index.json'),
       JSON.stringify({ requires: { filesAll: ['tsconfig.json'] }, tags: ['language:typescript'] }),
     );
     await write(join(dir, '.claude/rules/typescript/strict.md'), 'Use strict TypeScript.');
@@ -49,9 +49,9 @@ describe('discoverRemoteTree', () => {
   it('does not descend into failing directories', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'claude-remote-tree-'));
 
-    await write(join(dir, '.claude/index.json'), JSON.stringify({ schema: 'claude-remote-config/v2' }));
+    await write(join(dir, '.claude/.index.json'), JSON.stringify({ schema: 'claude-remote-config/v2' }));
     await write(
-      join(dir, '.claude/rules/python/index.json'),
+      join(dir, '.claude/rules/python/.index.json'),
       JSON.stringify({ requires: { filesAll: ['pyproject.toml'] } }),
     );
     await write(join(dir, '.claude/rules/python/style.md'), 'Use Python style.');
@@ -70,9 +70,9 @@ describe('discoverRemoteTree', () => {
   it('filters tagged directories when project tags are provided', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'claude-remote-tree-'));
 
-    await write(join(dir, '.claude/index.json'), JSON.stringify({ schema: 'claude-remote-config/v2' }));
-    await write(join(dir, '.claude/rules/security/index.json'), JSON.stringify({ tags: ['concern:security'] }));
-    await write(join(dir, '.claude/rules/testing/index.json'), JSON.stringify({ tags: ['concern:testing'] }));
+    await write(join(dir, '.claude/.index.json'), JSON.stringify({ schema: 'claude-remote-config/v2' }));
+    await write(join(dir, '.claude/rules/security/.index.json'), JSON.stringify({ tags: ['concern:security'] }));
+    await write(join(dir, '.claude/rules/testing/.index.json'), JSON.stringify({ tags: ['concern:testing'] }));
     await write(join(dir, '.claude/rules/security/secrets.md'), 'Do not leak secrets.');
     await write(join(dir, '.claude/rules/testing/tests.md'), 'Write tests.');
 
@@ -88,11 +88,11 @@ describe('discoverRemoteTree', () => {
   it('evaluates child directory tags independently from parent', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'claude-remote-tree-'));
 
-    await write(join(dir, '.claude/index.json'), JSON.stringify({ schema: 'claude-remote-config/v2' }));
-    await write(join(dir, '.claude/rules/typescript/index.json'), JSON.stringify({ tags: ['language:typescript'] }));
+    await write(join(dir, '.claude/.index.json'), JSON.stringify({ schema: 'claude-remote-config/v2' }));
+    await write(join(dir, '.claude/rules/typescript/.index.json'), JSON.stringify({ tags: ['language:typescript'] }));
     await write(join(dir, '.claude/rules/typescript/strict.md'), 'Use strict TypeScript.');
     await write(
-      join(dir, '.claude/rules/typescript/vitest/index.json'),
+      join(dir, '.claude/rules/typescript/vitest/.index.json'),
       JSON.stringify({ tags: ['framework:vitest'], requires: { filesAny: ['vitest.config.ts'] } }),
     );
     await write(join(dir, '.claude/rules/typescript/vitest/testing.md'), 'Write Vitest tests.');

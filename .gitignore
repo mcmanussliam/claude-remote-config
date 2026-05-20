@@ -49,9 +49,10 @@ temp/
 .cache/
 
 # claude-remote-config generated files
-.claude-remote-config/generated/
 .claude-remote-config/cache/
-.claude/rules/claude-remote-config/
+.claude/rules/remote/
+.claude/commands/remote/
+.claude/skills/remote-*/
 
 # claude-remote-config generated local Claude Code config
 .claude/settings.local.json

@@ -39,9 +39,9 @@ describe('initProject', () => {
     await write(join(projectDir, 'tsconfig.json'), '{}');
     await write(join(projectDir, 'package.json'), JSON.stringify({ devDependencies: { vitest: '2.1.9' } }));
 
-    await write(join(remoteDir, '.claude/index.json'), JSON.stringify({ schema: 'claude-remote-config/v2' }));
+    await write(join(remoteDir, '.claude/.index.json'), JSON.stringify({ schema: 'claude-remote-config/v2' }));
     await write(
-      join(remoteDir, '.claude/rules/typescript/index.json'),
+      join(remoteDir, '.claude/rules/typescript/.index.json'),
       JSON.stringify({ requires: { filesAll: ['tsconfig.json'] } }),
     );
     await write(join(remoteDir, '.claude/rules/typescript/strict.md'), 'Use strict TypeScript.\n');

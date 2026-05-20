@@ -15,7 +15,6 @@ import type {
 
 const DirectoryIndexSchema = z
   .object({
-    schema: z.string().optional(),
     tags: z.array(z.string()).default([]),
     requires: z.unknown().optional().transform(parseRequires),
   })
@@ -29,33 +28,6 @@ interface DiscoverRemoteTreeInput {
 }
 
 export async function discoverRemoteTree(remoteDir: string, input: DiscoverRemoteTreeInput): Promise<RemoteTreeSelection> {
-  // Validate root index.json
-  const rootIndexPath = join(remoteDir, REMOTE_FILES.rootIndex);
-  let rootIndex: DirectoryIndex;
-
-  try {
-    const content = await readFile(rootIndexPath, 'utf8');
-    const raw = JSON.parse(content) as unknown;
-    const parsed = DirectoryIndexSchema.safeParse(raw);
-
-    if (!parsed.success) {
-      throw new Error(`Invalid .claude/index.json: ${parsed.error.message}`);
-    }
-
-    rootIndex = parsed.data;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      throw new Error('Remote repository is missing .claude/index.json. Is this a claude-remote-config remote?');
-    }
-    throw error;
-  }
-
-  if (rootIndex.schema !== 'claude-remote-config/v2') {
-    throw new Error(
-      `Remote .claude/index.json has unsupported schema: ${String(rootIndex.schema)}. Expected claude-remote-config/v2.`,
-    );
-  }
-
   const rules: RemoteRuleAsset[] = [];
   const commands: RemoteCommandAsset[] = [];
   const skills: RemoteSkillAsset[] = [];
@@ -118,7 +90,7 @@ export async function discoverRemoteTree(remoteDir: string, input: DiscoverRemot
 }
 
 async function readDirectoryIndex(dir: string): Promise<DirectoryIndex | null> {
-  const indexPath = join(dir, 'index.json');
+  const indexPath = join(dir, '.index.json');
 
   try {
     const content = await readFile(indexPath, 'utf8');
@@ -126,7 +98,7 @@ async function readDirectoryIndex(dir: string): Promise<DirectoryIndex | null> {
     const parsed = DirectoryIndexSchema.safeParse(raw);
 
     if (!parsed.success) {
-      throw new Error(`Invalid index.json at ${indexPath}: ${parsed.error.message}`);
+      throw new Error(`Invalid .index.json at ${indexPath}: ${parsed.error.message}`);
     }
 
     return parsed.data;
@@ -157,7 +129,7 @@ async function walkDirectory(
   }
 
   for (const entry of entries.sort()) {
-    if (entry === 'index.json') {
+    if (entry === '.index.json') {
       continue;
     }
 

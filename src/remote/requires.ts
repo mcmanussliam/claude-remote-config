@@ -4,12 +4,6 @@ const RequiresSchema = z
   .object({
     filesAny: z.array(z.string()).optional(),
     filesAll: z.array(z.string()).optional(),
-    packageJsonAny: z
-      .object({
-        dependencies: z.array(z.string()).optional(),
-        devDependencies: z.array(z.string()).optional(),
-      })
-      .optional(),
   })
   .strict()
   .optional();
@@ -18,10 +12,6 @@ export type Requires = z.infer<typeof RequiresSchema>;
 
 export interface ProjectFacts {
   files: Set<string>;
-  packageJson: {
-    dependencies?: Record<string, unknown>;
-    devDependencies?: Record<string, unknown>;
-  };
 }
 
 export interface RequiresResult {
@@ -53,21 +43,6 @@ export function evaluateRequires(requires: Requires, project: ProjectFacts): Req
 
   if (requires.filesAny?.length && !requires.filesAny.some((file) => project.files.has(file))) {
     return { pass: false, reason: `none of required files exist: ${requires.filesAny.join(', ')}` };
-  }
-
-  if (requires.packageJsonAny) {
-    const dependencyNames = requires.packageJsonAny.dependencies ?? [];
-    const devDependencyNames = requires.packageJsonAny.devDependencies ?? [];
-    const dependencyMatches = dependencyNames.map((name) => Boolean(project.packageJson.dependencies?.[name]));
-    const devDependencyMatches = devDependencyNames.map((name) => Boolean(project.packageJson.devDependencies?.[name]));
-
-    if (
-      dependencyMatches.length + devDependencyMatches.length > 0 &&
-      ![...dependencyMatches, ...devDependencyMatches].some(Boolean)
-    ) {
-      const names = [...dependencyNames, ...devDependencyNames].join(', ');
-      return { pass: false, reason: `none of required package.json dependencies exist: ${names}` };
-    }
   }
 
   return { pass: true };

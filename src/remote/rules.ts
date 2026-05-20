@@ -144,17 +144,7 @@ export async function collectProjectFacts(projectDir: string): Promise<ProjectFa
     await fg('**/*', { cwd: projectDir, onlyFiles: true, deep: 4, dot: true, ignore: ['node_modules/**', '.git/**'] }),
   );
 
-  let packageJson: ProjectFacts['packageJson'] = {};
-
-  try {
-    packageJson = JSON.parse(await readFile(join(projectDir, 'package.json'), 'utf8')) as ProjectFacts['packageJson'];
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-      throw error;
-    }
-  }
-
-  return { files, packageJson };
+  return { files };
 }
 
 export function resolveRuleParams(rule: Rule, manifestParams: Record<string, unknown>): Record<string, unknown> {

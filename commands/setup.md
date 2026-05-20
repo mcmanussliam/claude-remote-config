@@ -1,7 +1,7 @@
 ---
 description: Configure this project to use a shared claude-remote-config repository
-argument-hint: --remote <repo> [--ref <ref>] [--profile <profile>]
-allowed-tools: Bash(claude-remote-config setup:*)
+argument-hint: --remote <remote> [--ref <ref>] [--profile <profile>]
+allowed-tools: Bash(claude-remote-config setup*)
 ---
 
 Configure this project with Claude Remote Config.
@@ -14,14 +14,10 @@ claude-remote-config setup $ARGUMENTS
 
 If `--remote` is missing, ask for the remote repository before running the command.
 
-If `--ref` is missing, add `--ref v1.0.0`.
-
-If `--profile` is missing, add `--profile node-service`.
-
 After setup succeeds, tell the user to review and commit:
 
 ```text
-.claude-remote-config.yml
+.claude-remote-config.json
 .gitignore
 ```
 

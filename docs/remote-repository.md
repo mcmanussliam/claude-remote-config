@@ -8,55 +8,41 @@ A remote config repository uses the `.claude/` tree shape:
 
 ```text
 .claude/
-  index.json
+  .index.json
   rules/
-    index.json
+    .index.json
     typescript/
-      index.json
+      .index.json
       strict-types.md
       testing/
         vitest/
-          index.json
+          .index.json
           test-style.md
   commands/
-    index.json
+    .index.json
     remote-test.md
     testing/
-      index.json
+      .index.json
       test.md
   skills/
-    index.json
+    .index.json
     code-review/
-      index.json
+      .index.json
       SKILL.md
   settings.json
   hooks.json
 ```
 
-Only directories that pass their `index.json` gates are included when a consuming project syncs.
-
-## Root index
-
-`.claude/index.json` is required and must declare the schema:
-
-```json
-{
-  "schema": "claude-remote-config/v2"
-}
-```
+Only directories that pass their `.index.json` gates are included when a consuming project syncs.
 
 ## Directory index gates
 
-Each directory can contain an optional `index.json` that gates whether the directory and all its children are included:
+Each directory can contain an optional `.index.json` that gates whether the directory and all its children are included:
 
 ```json
 {
   "requires": {
     "filesAll": ["tsconfig.json"],
-    "packageJsonAny": {
-      "dependencies": ["typescript"],
-      "devDependencies": ["typescript"]
-    }
   },
   "tags": ["language:typescript"]
 }
@@ -75,10 +61,6 @@ If a directory declares `tags`, a consuming project must include at least one ma
   "requires": {
     "filesAny": ["vitest.config.ts", "vitest.config.mts"],
     "filesAll": ["package.json", "tsconfig.json"],
-    "packageJsonAny": {
-      "dependencies": ["react"],
-      "devDependencies": ["vitest"]
-    }
   }
 }
 ```

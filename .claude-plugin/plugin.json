@@ -1,5 +1,5 @@
 {
-  "name": "claude-remote-config",
+  "name": "remote-config",
   "version": "0.1.0",
   "description": "Claude Code plugin for maintaining shared versioned Claude configurations.",
   "license": "MIT",

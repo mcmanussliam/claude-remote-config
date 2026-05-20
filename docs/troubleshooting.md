@@ -56,9 +56,9 @@ If the remote was previously cached in a bad state, run `init` again. The cache 
 
 `--offline` requires the remote repository to already exist in the plugin data cache. Run once without `--offline`, then use offline mode later.
 
-## Remote missing `.claude/index.json`
+## Remote missing `.claude/.index.json`
 
-The remote repository must be a `claude-remote-config/v2` remote with a `.claude/index.json` file at the root. Legacy remotes using `claude-remote-manifest.yml` and `rules/**/*.md` are not supported by this version.
+The remote repository must be a `claude-remote-config/v2` remote with a `.claude/.index.json` file at the root. Legacy remotes using `claude-remote-manifest.yml` and `rules/**/*.md` are not supported by this version.
 
 ## Generated files are not updating
 

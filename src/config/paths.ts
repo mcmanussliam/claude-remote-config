@@ -1,6 +1,5 @@
 export const PROJECT_FILES = {
   manifest: '.claude-remote-config.json',
-  legacyManifest: '.claude-remote-config.yml',
   gitignore: '.gitignore',
   generatedCacheDir: '.claude-remote-config/cache',
   generatedRulesDir: '.claude/rules/remote',
@@ -19,7 +18,6 @@ export const PLUGIN_DATA = {
 
 export const REMOTE_FILES = {
   claudeDir: '.claude',
-  rootIndex: '.claude/index.json',
   rulesDir: '.claude/rules',
   commandsDir: '.claude/commands',
   skillsDir: '.claude/skills',
