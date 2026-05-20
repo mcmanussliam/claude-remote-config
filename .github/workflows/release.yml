@@ -62,8 +62,9 @@ jobs:
           git add package.json .claude-plugin/plugin.json .claude-plugin/marketplace.json CHANGELOG.md
           git add --force dist/
           git commit -m "chore(release): v${VERSION}"
-          git tag "remote-config--v${VERSION}"
-          git push origin main --follow-tags
+          git tag -a "remote-config--v${VERSION}" -m "v${VERSION}"
+          git push origin main
+          git push origin "remote-config--v${VERSION}"
 
       - name: Create GitHub Release
         env:
