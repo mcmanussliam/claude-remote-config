@@ -24,7 +24,9 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format .",
-    "format:fix": "biome format --write ."
+    "format:fix": "biome format --write .",
+    "version-bump": "node scripts/version-bump.mjs",
+    "changelog": "node scripts/changelog.mjs"
   },
   "dependencies": {
     "commander": "12.1.0",
