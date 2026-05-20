@@ -13,13 +13,19 @@ export interface RemoteCommandAsset {
   content: string;
 }
 
+export interface RemoteSkillFile {
+  remotePath: string;
+  relativeOutputPath: string;
+  content: string;
+}
+
 export interface RemoteSkillAsset {
   kind: 'skill';
   remotePath: string;
   relativeOutputPath: string;
   name: string;
   generatedName: string;
-  files: Array<{ remotePath: string; relativeOutputPath: string; content: string }>;
+  files: RemoteSkillFile[];
 }
 
 export interface RemoteJsonAsset {
