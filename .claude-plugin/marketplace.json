@@ -1,0 +1,16 @@
+{
+  "name": "mcmanussliam",
+  "owner": { "name": "Liam McManus" },
+  "plugins": [
+    {
+      "name": "remote-config",
+      "source": {
+        "source": "github",
+        "repo": "mcmanussliam/claude-remote-config",
+        "ref": "remote-config--v0.1.0"
+      },
+      "description": "Shared, versioned Claude Code configuration for every project.",
+      "version": "0.1.0"
+    }
+  ]
+}
