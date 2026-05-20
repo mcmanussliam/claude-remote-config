@@ -1,4 +1,4 @@
-import { mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 
 import fg from 'fast-glob';
@@ -6,77 +6,68 @@ import fg from 'fast-glob';
 import { PROJECT_FILES } from '../config/paths.js';
 import type { RemoteCommandAsset, RemoteTreeSelection } from '../remote/assets.js';
 
+async function writeAsset(dest: string, content: string): Promise<void> {
+  await mkdir(dirname(dest), { recursive: true });
+  await writeFile(dest, content);
+}
+
 export async function materializeRemoteAssets(projectDir: string, selection: RemoteTreeSelection): Promise<void> {
-  // Clean stale generated rules and commands
-  await rm(join(projectDir, PROJECT_FILES.generatedRulesDir), { recursive: true, force: true });
-  await rm(join(projectDir, PROJECT_FILES.generatedCommandsDir), { recursive: true, force: true });
+  await Promise.all([
+    rm(join(projectDir, PROJECT_FILES.generatedRulesDir), { recursive: true, force: true }),
+    rm(join(projectDir, PROJECT_FILES.generatedCommandsDir), { recursive: true, force: true }),
+    cleanGeneratedSkills(projectDir),
+  ]);
 
-  // Clean stale generated skills (directories starting with remote-)
-  await cleanGeneratedSkills(projectDir);
-
-  // Write rules
-  for (const rule of selection.rules) {
-    const dest = join(projectDir, PROJECT_FILES.generatedRulesDir, rule.relativeOutputPath);
-    await mkdir(dirname(dest), { recursive: true });
-    await writeFile(dest, rule.content);
-  }
-
-  // Write commands
-  for (const command of selection.commands) {
-    const dest = join(projectDir, PROJECT_FILES.generatedCommandsDir, command.relativeOutputPath);
-    await mkdir(dirname(dest), { recursive: true });
-    await writeFile(dest, command.content);
-  }
-
-  // Write skills
-  for (const skill of selection.skills) {
-    for (const file of skill.files) {
-      const dest = join(projectDir, PROJECT_FILES.skillsDir, file.relativeOutputPath);
-      await mkdir(dirname(dest), { recursive: true });
-      await writeFile(dest, file.content);
-    }
-  }
-
-  // Write settings
-  if (selection.settings) {
-    const settingsPath = join(projectDir, PROJECT_FILES.settingsLocal);
-    await mkdir(dirname(settingsPath), { recursive: true });
-    await writeFile(settingsPath, `${JSON.stringify(selection.settings.value, null, 2)}\n`);
-  }
-
-  // Write hooks
-  if (selection.hooks) {
-    const hooksPath = join(projectDir, PROJECT_FILES.hooksLocal);
-    await mkdir(dirname(hooksPath), { recursive: true });
-    await writeFile(hooksPath, `${JSON.stringify(selection.hooks.value, null, 2)}\n`);
-  }
+  await Promise.all([
+    ...selection.rules.map((rule) =>
+      writeAsset(join(projectDir, PROJECT_FILES.generatedRulesDir, rule.relativeOutputPath), rule.content),
+    ),
+    ...selection.commands.map((command) =>
+      writeAsset(join(projectDir, PROJECT_FILES.generatedCommandsDir, command.relativeOutputPath), command.content),
+    ),
+    ...selection.skills.flatMap((skill) =>
+      skill.files.map((file) =>
+        writeAsset(join(projectDir, PROJECT_FILES.skillsDir, file.relativeOutputPath), file.content),
+      ),
+    ),
+    ...(selection.settings
+      ? [
+          writeAsset(
+            join(projectDir, PROJECT_FILES.settingsLocal),
+            `${JSON.stringify(selection.settings.value, null, 2)}\n`,
+          ),
+        ]
+      : []),
+    ...(selection.hooks
+      ? [
+          writeAsset(
+            join(projectDir, PROJECT_FILES.hooksLocal),
+            `${JSON.stringify(selection.hooks.value, null, 2)}\n`,
+          ),
+        ]
+      : []),
+  ]);
 }
 
 async function cleanGeneratedSkills(projectDir: string): Promise<void> {
   const skillsDir = join(projectDir, PROJECT_FILES.skillsDir);
+  const entries = await readdir(skillsDir).catch((err: NodeJS.ErrnoException) => {
+    if (err.code === 'ENOENT') return null;
+    throw err;
+  });
 
-  let entries: string[];
+  if (!entries) return;
 
-  try {
-    entries = await readdir(skillsDir);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return;
-    }
-    throw error;
-  }
-
-  for (const entry of entries) {
-    if (entry.startsWith('remote-')) {
-      await rm(join(skillsDir, entry), { recursive: true, force: true });
-    }
-  }
+  await Promise.all(
+    entries
+      .filter((entry) => entry.startsWith('remote-'))
+      .map((entry) => rm(join(skillsDir, entry), { recursive: true, force: true })),
+  );
 }
 
 export async function validateNoCommandCollisions(projectDir: string, commands: RemoteCommandAsset[]): Promise<void> {
   const commandsDir = join(projectDir, PROJECT_FILES.commandsDir);
 
-  // Scan all local command .md files excluding the remote/ subdirectory
   const localCommandFiles = await fg('**/*.md', {
     cwd: commandsDir,
     onlyFiles: true,
