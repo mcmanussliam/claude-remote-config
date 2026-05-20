@@ -28,7 +28,7 @@ interface GlobalOptions {
   project?: string;
   pluginData?: string;
   offline?: boolean;
-  gitignore?: boolean;
+  gitignore: boolean;
   verbose?: boolean;
 }
 

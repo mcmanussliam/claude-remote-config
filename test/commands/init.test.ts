@@ -53,7 +53,7 @@ describe('initProject', () => {
     );
     await write(join(remoteDir, '.claude/hooks.json'), JSON.stringify({ hooks: { SessionStart: [] } }));
 
-    const result = await initProject({ projectDir, pluginDataDir });
+    const result = await initProject({ projectDir, pluginDataDir, gitignore: true });
 
     expect(result.manifest?.remote).toBe(remoteDir);
     await expect(readFile(join(projectDir, '.claude/rules/remote/typescript/strict.md'), 'utf8')).resolves.toContain(

@@ -18,7 +18,7 @@ export interface InitOptions {
   hookMode?: boolean;
   /** Skip network fetch; use the cached remote clone. */
   offline?: boolean;
-  gitignore?: boolean;
+  gitignore: boolean;
   /** Skip all file writes; used by explain and print commands. */
   dryRun?: boolean;
   verbose?: boolean;
