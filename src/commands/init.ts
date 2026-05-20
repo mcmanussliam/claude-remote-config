@@ -101,7 +101,7 @@ async function hasGeneratedOutput(projectDir: string): Promise<boolean> {
   for (const relativePath of [
     PROJECT_FILES.generatedRulesDir,
     PROJECT_FILES.generatedCommandsDir,
-    '.claude/skills',
+    PROJECT_FILES.skillsDir,
     PROJECT_FILES.settingsLocal,
     PROJECT_FILES.hooksLocal,
   ]) {

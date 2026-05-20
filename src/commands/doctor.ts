@@ -47,7 +47,7 @@ async function exists(path: string): Promise<boolean> {
 
 async function hasGeneratedSkills(projectDir: string): Promise<boolean> {
   try {
-    const skillsDir = join(projectDir, '.claude/skills');
+    const skillsDir = join(projectDir, PROJECT_FILES.skillsDir);
     const entries = await readdir(skillsDir);
     return entries.some((entry) => entry.startsWith('remote-'));
   } catch {

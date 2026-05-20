@@ -31,7 +31,7 @@ export async function materializeRemoteAssets(projectDir: string, selection: Rem
   // Write skills
   for (const skill of selection.skills) {
     for (const file of skill.files) {
-      const dest = join(projectDir, '.claude/skills', file.relativeOutputPath);
+      const dest = join(projectDir, PROJECT_FILES.skillsDir, file.relativeOutputPath);
       await mkdir(dirname(dest), { recursive: true });
       await writeFile(dest, file.content);
     }
@@ -53,7 +53,7 @@ export async function materializeRemoteAssets(projectDir: string, selection: Rem
 }
 
 async function cleanGeneratedSkills(projectDir: string): Promise<void> {
-  const skillsDir = join(projectDir, '.claude/skills');
+  const skillsDir = join(projectDir, PROJECT_FILES.skillsDir);
 
   let entries: string[];
 
@@ -74,7 +74,7 @@ async function cleanGeneratedSkills(projectDir: string): Promise<void> {
 }
 
 export async function validateNoCommandCollisions(projectDir: string, commands: RemoteCommandAsset[]): Promise<void> {
-  const commandsDir = join(projectDir, '.claude/commands');
+  const commandsDir = join(projectDir, PROJECT_FILES.commandsDir);
 
   // Scan all local command .md files excluding the remote/ subdirectory
   const localCommandFiles = await fg('**/*.md', {
