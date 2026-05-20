@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="1836" height="904" alt="claude-remote-config-header" src="https://github.com/user-attachments/assets/0adb7f05-e06f-4ad3-a19f-a50f5aa1d142" />
+  <img width="700" height="450" alt="image" src="/assets/README-header.gif">
 </p>
 
 <h1 align="center">Claude Remote Config</h1>
@@ -7,46 +7,42 @@
   Shared, versioned Claude Code configuration for every project.
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Claude-D97757?logo=claude&logoColor=fff" />
-</p>
-
 ## Features
 
-- **One shared `.claude/` tree**, maintained once and generated into every repository that needs it.
-- **Directory filtering**, using project tags and required files.
-- **Local generated output**, keeping shared guidance, commands, skills, settings, and hooks separate from human-authored Claude files.
+- **One shared config repository**, maintained once and pulled into every
+  project that needs it.
+- **Tag and path filtering**, include only the rules, commands, and skills each
+  project needs.
+- **Fully generated output**, shared Claude files stay separate from your own so
+  nothing gets overwritten.
 
 ## Quick Start
 
-1. Add the marketplace and install the plugin. Claude displays it as `remote config`:
+1. Install the plugin:
 
 ```bash
 claude plugin marketplace add mcmanussliam/claude-remote-config
 claude plugin install remote-config@mcmanussliam
 ```
 
-2. In each project that should use the shared config, run the setup slash command from Claude Code:
+2. In each project, run the setup command from Claude Code:
 
-```text
+```bash
 /remote-config setup --remote git@example.com:your-org/claude-config.git
 ```
 
-3. Review and commit the project config created by setup:
+3. Commit the files setup created:
 
-```text
+```txt
 .claude-remote-config.json
 .gitignore
 ```
 
-4. Restart Claude Code in the project. The plugin's `SessionStart` hook syncs the remote config and generates local Claude files automatically.
-
+4. Restart Claude Code. The plugin syncs and regenerates your config
+   automatically on every session start.
+5. And that's it 🎉
 
 ## Docs
 
 - [Getting started](docs/getting-started.md)
 - [Remote format](docs/remote-format.md)
-
-<p align="center">
-  Version your Claude Code guidance once, then apply it everywhere.
-</p>
