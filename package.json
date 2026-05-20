@@ -13,7 +13,7 @@
   "bin": {
     "claude-remote-config": "./bin/claude-remote-config"
   },
-  "files": ["bin/", "dist/", ".claude-plugin/", "hooks/", "commands/", "docs/*.md", "assets/", "README.md"],
+  "files": ["bin/", "dist/", ".claude-plugin/", "hooks/", "commands/", "docs/*.md", "assets/", "README.md", "LICENSE"],
   "scripts": {
     "start": "tsx src/cli.ts",
     "build": "tsc -p tsconfig.build.json",
