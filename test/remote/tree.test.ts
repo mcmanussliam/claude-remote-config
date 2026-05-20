@@ -2,8 +2,8 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { discoverRemoteTree } from '../../src/remote/tree.js';
 import type { ProjectFacts } from '../../src/remote/requires.js';
+import { discoverRemoteTree } from '../../src/remote/tree.js';
 
 const typescriptProject: ProjectFacts = {
   files: new Set(['package.json', 'tsconfig.json', 'vitest.config.ts']),
@@ -18,10 +18,7 @@ describe('discoverRemoteTree', () => {
   it('discovers assets from passing directories', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'claude-remote-tree-'));
 
-    await write(
-      join(dir, '.claude/.index.json'),
-      JSON.stringify({ schema: 'claude-remote-config/v2' }),
-    );
+    await write(join(dir, '.claude/.index.json'), JSON.stringify({ schema: 'claude-remote-config/v2' }));
     await write(
       join(dir, '.claude/rules/typescript/.index.json'),
       JSON.stringify({ requires: { filesAll: ['tsconfig.json'] }, tags: ['language:typescript'] }),
@@ -98,7 +95,10 @@ describe('discoverRemoteTree', () => {
 
     expect(result.rules.map((r) => r.remotePath)).toEqual(['.claude/rules/typescript/strict.md']);
     expect(result.skipped).toContainEqual(
-      expect.objectContaining({ path: '.claude/rules/typescript/vitest', reason: expect.stringMatching(/tags did not match/) }),
+      expect.objectContaining({
+        path: '.claude/rules/typescript/vitest',
+        reason: expect.stringMatching(/tags did not match/),
+      }),
     );
   });
 });

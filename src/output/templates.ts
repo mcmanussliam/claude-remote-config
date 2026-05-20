@@ -7,7 +7,11 @@ Using existing generated claude-remote-config files for this session.
 `;
 }
 
-export function initSummaryTemplate(manifest: Manifest, resolvedCommit: string, selection?: RemoteTreeSelection): string {
+export function initSummaryTemplate(
+  manifest: Manifest,
+  resolvedCommit: string,
+  selection?: RemoteTreeSelection,
+): string {
   const counts = selection
     ? `rules=${selection.rules.length}, commands=${selection.commands.length}, skills=${selection.skills.length}, skipped=${selection.skipped.length}`
     : 'selection unavailable';

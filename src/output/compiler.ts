@@ -30,6 +30,9 @@ function formatPathsFrontmatter(paths: string[]): string {
 }
 
 export function generatedRuleFilename(index: number, id: string): string {
-  const slug = id.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase();
+  const slug = id
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .toLowerCase();
   return `${String(index + 1).padStart(3, '0')}-${slug}.md`;
 }

@@ -1,9 +1,9 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { ensureGitignoreEntries } from '../output/gitignore.js';
 import { PROJECT_FILES } from '../config/paths.js';
 import { setupWritePath } from '../config/safe-paths.js';
+import { ensureGitignoreEntries } from '../output/gitignore.js';
 
 export interface SetupOptions {
   projectDir: string;

@@ -47,7 +47,10 @@ describe('initProject', () => {
     await write(join(remoteDir, '.claude/rules/typescript/strict.md'), 'Use strict TypeScript.\n');
     await write(join(remoteDir, '.claude/commands/testing/test.md'), 'Run tests.\n');
     await write(join(remoteDir, '.claude/skills/review/SKILL.md'), 'Review code.\n');
-    await write(join(remoteDir, '.claude/settings.json'), JSON.stringify({ permissions: { allow: ['Bash(npm test)'] } }));
+    await write(
+      join(remoteDir, '.claude/settings.json'),
+      JSON.stringify({ permissions: { allow: ['Bash(npm test)'] } }),
+    );
     await write(join(remoteDir, '.claude/hooks.json'), JSON.stringify({ hooks: { SessionStart: [] } }));
 
     const result = await initProject({ projectDir, pluginDataDir });

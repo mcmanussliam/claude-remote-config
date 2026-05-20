@@ -15,7 +15,11 @@ describe('doctorProject', () => {
     const dir = await mkdtemp(join(tmpdir(), 'claude-remote-config-doctor-'));
     await writeFile(
       join(dir, '.claude-remote-config.json'),
-      JSON.stringify({ remote: '../rules', output: { rules: true, commands: false, skills: false, settingsLocal: false, hooksLocal: false }, tags: [] }),
+      JSON.stringify({
+        remote: '../rules',
+        output: { rules: true, commands: false, skills: false, settingsLocal: false, hooksLocal: false },
+        tags: [],
+      }),
     );
     const out = await doctorProject(dir);
     expect(out).toContain('manifest: ok (../rules)');
@@ -28,7 +32,11 @@ describe('doctorProject', () => {
     const dir = await mkdtemp(join(tmpdir(), 'claude-remote-config-doctor-'));
     await writeFile(
       join(dir, '.claude-remote-config.json'),
-      JSON.stringify({ remote: '../rules', output: { rules: true, commands: false, skills: false, settingsLocal: false, hooksLocal: false }, tags: [] }),
+      JSON.stringify({
+        remote: '../rules',
+        output: { rules: true, commands: false, skills: false, settingsLocal: false, hooksLocal: false },
+        tags: [],
+      }),
     );
     await mkdir(join(dir, '.claude/rules/remote'), { recursive: true });
     await writeFile(join(dir, '.claude/rules/remote/strict.md'), '# Generated\n');

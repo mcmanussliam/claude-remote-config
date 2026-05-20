@@ -10,5 +10,5 @@ export function formatExplain(result: InitResult): string {
   const skills = result.selection.skills.map((skill) => `selected skill ${skill.name}`).join('\n');
   const skipped = result.selection.skipped.map((item) => `skipped ${item.path}: ${item.reason}`).join('\n');
 
-  return [rules, commands, skills, skipped].filter(Boolean).join('\n') + '\n';
+  return `${[rules, commands, skills, skipped].filter(Boolean).join('\n')}\n`;
 }

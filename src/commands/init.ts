@@ -1,15 +1,15 @@
 import { access } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
-import { loadManifest, type Manifest } from '../config/manifest.js';
+import { type Manifest, loadManifest } from '../config/manifest.js';
 import { PROJECT_FILES } from '../config/paths.js';
-import { syncRemote } from '../remote/git.js';
-import { collectProjectFacts } from '../remote/rules.js';
-import { discoverRemoteTree } from '../remote/tree.js';
-import type { RemoteTreeSelection } from '../remote/assets.js';
 import { materializeRemoteAssets } from '../output/assets.js';
 import { ensureGitignoreEntries } from '../output/gitignore.js';
 import { hookFallbackWarning, initSummaryTemplate } from '../output/templates.js';
+import type { RemoteTreeSelection } from '../remote/assets.js';
+import { syncRemote } from '../remote/git.js';
+import { collectProjectFacts } from '../remote/rules.js';
+import { discoverRemoteTree } from '../remote/tree.js';
 
 export interface InitOptions {
   projectDir: string;
@@ -108,9 +108,7 @@ async function hasGeneratedOutput(projectDir: string): Promise<boolean> {
     try {
       await access(join(projectDir, relativePath));
       return true;
-    } catch {
-      continue;
-    }
+    } catch {}
   }
   return false;
 }

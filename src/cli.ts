@@ -2,10 +2,10 @@ import { createRequire } from 'node:module';
 
 import { Command } from 'commander';
 
+import { doctorProject } from './commands/doctor.js';
+import { formatExplain } from './commands/explain.js';
 import { initProject } from './commands/init.js';
 import { setupProject } from './commands/setup.js';
-import { formatExplain } from './commands/explain.js';
-import { doctorProject } from './commands/doctor.js';
 import { CLAUDE_HOOKS, PROJECT_FILES } from './config/paths.js';
 
 function readVersion(): string {
@@ -64,12 +64,12 @@ addCommonOptions(program.command('init'))
       if (options.hookMode) {
         if (result.summary) {
           process.stdout.write(
-            JSON.stringify({
+            `${JSON.stringify({
               hookSpecificOutput: {
                 hookEventName: CLAUDE_HOOKS.sessionStart,
                 additionalContext: result.summary,
               },
-            }) + '\n',
+            })}\n`,
           );
         }
       } else {

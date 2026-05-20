@@ -51,7 +51,9 @@ describe('materializeRemoteAssets', () => {
       'Use strict TypeScript.\n',
     );
     await expect(readFile(join(dir, '.claude/commands/remote/testing/test.md'), 'utf8')).resolves.toBe('Run tests.\n');
-    await expect(readFile(join(dir, '.claude/skills/remote-review/SKILL.md'), 'utf8')).resolves.toContain('Review code.');
+    await expect(readFile(join(dir, '.claude/skills/remote-review/SKILL.md'), 'utf8')).resolves.toContain(
+      'Review code.',
+    );
     await expect(readFile(join(dir, '.claude/settings.local.json'), 'utf8')).resolves.toContain('npm test');
     await expect(readFile(join(dir, '.claude/hooks.local.json'), 'utf8')).resolves.toContain('SessionStart');
   });

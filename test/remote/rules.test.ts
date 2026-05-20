@@ -7,7 +7,9 @@ const projectHasTypescript = {
 
 describe('rules', () => {
   it('parses rule frontmatter', () => {
-    const rule = parseRule('rules/typescript/error.md', `---
+    const rule = parseRule(
+      'rules/typescript/error.md',
+      `---
 id: typescript.error-handling
 title: Error handling
 version: 1.2.0
@@ -18,7 +20,8 @@ paths:
 priority: 20
 ---
 # Body
-`);
+`,
+    );
 
     expect(rule.id).toBe('typescript.error-handling');
     expect(rule.paths).toEqual(['src/**/*.ts']);
@@ -27,9 +30,9 @@ priority: 20
 
   it('selects all rules when no tags specified', () => {
     const rules = [
-      parseRule('rules/a.md', `---\nid: a\ntitle: A\nversion: 1.0.0\ntags: [x]\n---\nA`),
-      parseRule('rules/b.md', `---\nid: b\ntitle: B\nversion: 1.0.0\ntags: [y]\n---\nB`),
-      parseRule('rules/c.md', `---\nid: c\ntitle: C\nversion: 1.0.0\n---\nC`),
+      parseRule('rules/a.md', '---\nid: a\ntitle: A\nversion: 1.0.0\ntags: [x]\n---\nA'),
+      parseRule('rules/b.md', '---\nid: b\ntitle: B\nversion: 1.0.0\ntags: [y]\n---\nB'),
+      parseRule('rules/c.md', '---\nid: c\ntitle: C\nversion: 1.0.0\n---\nC'),
     ];
 
     const result = selectRules({ manifestTags: [], excludedIds: [], rules, project: projectHasTypescript });
@@ -38,37 +41,46 @@ priority: 20
 
   it('selects by tags, then excludes and sorts', () => {
     const rules = [
-      parseRule('rules/base/hygiene.md', `---
+      parseRule(
+        'rules/base/hygiene.md',
+        `---
 id: repo.hygiene
 title: Hygiene
 version: 1.0.0
 tags: [concern:hygiene]
 priority: 20
 ---
-Hygiene`),
-      parseRule('rules/security/secrets.md', `---
+Hygiene`,
+      ),
+      parseRule(
+        'rules/security/secrets.md',
+        `---
 id: security.secrets
 title: Secrets
 version: 1.1.0
 tags: [concern:security]
 priority: 10
 ---
-Secrets`),
-      parseRule('rules/testing/playwright.md', `---
+Secrets`,
+      ),
+      parseRule(
+        'rules/testing/playwright.md',
+        `---
 id: testing.playwright
 title: Playwright
 version: 1.0.0
 tags: [concern:testing]
 priority: 5
 ---
-Playwright`)
+Playwright`,
+      ),
     ];
 
     const result = selectRules({
       manifestTags: ['concern:security', 'concern:hygiene'],
       excludedIds: ['testing.playwright'],
       rules,
-      project: projectHasTypescript
+      project: projectHasTypescript,
     });
 
     expect(result.selected.map((rule) => rule.id)).toEqual(['security.secrets', 'repo.hygiene']);
@@ -77,7 +89,9 @@ Playwright`)
 
   it('skips rules that fail requires checks', () => {
     const rules = [
-      parseRule('rules/typescript/error.md', `---
+      parseRule(
+        'rules/typescript/error.md',
+        `---
 id: typescript.error-handling
 title: Error handling
 version: 1.0.0
@@ -86,14 +100,15 @@ requires:
   filesAll:
     - tsconfig.json
 ---
-Body`)
+Body`,
+      ),
     ];
 
     const result = selectRules({
       manifestTags: ['language:typescript'],
       excludedIds: [],
       rules,
-      project: { files: new Set(['package.json']) }
+      project: { files: new Set(['package.json']) },
     });
 
     expect(result.selected).toHaveLength(0);
@@ -102,21 +117,27 @@ Body`)
 
   it('detects conflicts', () => {
     const rules = [
-      parseRule('rules/a.md', `---
+      parseRule(
+        'rules/a.md',
+        `---
 id: a
 title: A
 version: 1.0.0
 tags: [concern:test]
 conflicts_with: [b]
 ---
-A`),
-      parseRule('rules/b.md', `---
+A`,
+      ),
+      parseRule(
+        'rules/b.md',
+        `---
 id: b
 title: B
 version: 1.0.0
 tags: [concern:test]
 ---
-B`)
+B`,
+      ),
     ];
 
     expect(() =>
@@ -124,8 +145,8 @@ B`)
         manifestTags: ['concern:test'],
         excludedIds: [],
         rules,
-        project: projectHasTypescript
-      })
+        project: projectHasTypescript,
+      }),
     ).toThrow(/conflict/i);
   });
 });

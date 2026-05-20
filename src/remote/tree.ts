@@ -1,10 +1,9 @@
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import { basename, join, relative } from 'node:path';
 
 import { z } from 'zod';
 
 import { REMOTE_FILES } from '../config/paths.js';
-import { evaluateRequires, parseRequires, type ProjectFacts } from './requires.js';
 import type {
   RemoteCommandAsset,
   RemoteJsonAsset,
@@ -12,6 +11,7 @@ import type {
   RemoteSkillAsset,
   RemoteTreeSelection,
 } from './assets.js';
+import { type ProjectFacts, evaluateRequires, parseRequires } from './requires.js';
 
 const DirectoryIndexSchema = z
   .object({
@@ -27,7 +27,10 @@ interface DiscoverRemoteTreeInput {
   project: ProjectFacts;
 }
 
-export async function discoverRemoteTree(remoteDir: string, input: DiscoverRemoteTreeInput): Promise<RemoteTreeSelection> {
+export async function discoverRemoteTree(
+  remoteDir: string,
+  input: DiscoverRemoteTreeInput,
+): Promise<RemoteTreeSelection> {
   const rules: RemoteRuleAsset[] = [];
   const commands: RemoteCommandAsset[] = [];
   const skills: RemoteSkillAsset[] = [];

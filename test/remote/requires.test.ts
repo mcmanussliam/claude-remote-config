@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateRequires, parseRequires, type ProjectFacts } from '../../src/remote/requires.js';
+import { type ProjectFacts, evaluateRequires, parseRequires } from '../../src/remote/requires.js';
 
 const project: ProjectFacts = {
   files: new Set(['package.json', 'tsconfig.json', 'vitest.config.ts']),

@@ -27,12 +27,12 @@ describe('mergeSettings', () => {
     expect(
       mergeSettings([
         { permissions: { allow: ['Bash(git status)'] }, hooks: ['a'], scalar: 'old' },
-        { permissions: { allow: ['Bash(git status)', 'Read(*)'] }, hooks: ['b'], scalar: 'new' }
-      ])
+        { permissions: { allow: ['Bash(git status)', 'Read(*)'] }, hooks: ['b'], scalar: 'new' },
+      ]),
     ).toEqual({
       permissions: { allow: ['Bash(git status)', 'Read(*)'] },
       hooks: ['a', 'b'],
-      scalar: 'new'
+      scalar: 'new',
     });
   });
 });

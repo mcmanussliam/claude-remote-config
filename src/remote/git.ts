@@ -1,6 +1,6 @@
+import { createHash } from 'node:crypto';
 import { mkdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
-import { createHash } from 'node:crypto';
 
 import { execa } from 'execa';
 
@@ -22,7 +22,12 @@ export interface SyncedRemote {
 
 /** Clones on first run; fetches on subsequent runs. Wipes a corrupt clone before retrying. */
 export async function syncRemote(options: SyncRemoteOptions): Promise<SyncedRemote> {
-  const sourceDir = join(options.pluginDataDir, PLUGIN_DATA.remotesDir, hashRemote(options.remote), PLUGIN_DATA.sourceDir);
+  const sourceDir = join(
+    options.pluginDataDir,
+    PLUGIN_DATA.remotesDir,
+    hashRemote(options.remote),
+    PLUGIN_DATA.sourceDir,
+  );
 
   if (!options.offline) {
     await mkdir(join(options.pluginDataDir, PLUGIN_DATA.remotesDir, hashRemote(options.remote)), { recursive: true });

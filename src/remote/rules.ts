@@ -7,7 +7,7 @@ import { z } from 'zod';
 
 import { REMOTE_FILES } from '../config/paths.js';
 import { assertSafeRemoteRead } from '../config/safe-paths.js';
-import { evaluateRequires, parseRequires, type ProjectFacts, type Requires } from './requires.js';
+import { type ProjectFacts, type Requires, evaluateRequires, parseRequires } from './requires.js';
 
 const RuleSchema = z.object({
   id: z.string().min(1),
@@ -70,7 +70,9 @@ export async function loadRules(remoteDir: string): Promise<Rule[]> {
   const rulesGlob = 'rules/**/*.md';
   const entries = await fg(rulesGlob, { cwd: remoteDir, onlyFiles: true, dot: false });
   const rules = await Promise.all(
-    entries.sort().map(async (entry) => parseRule(entry, await readFile(assertSafeRemoteRead(remoteDir, entry), 'utf8'))),
+    entries
+      .sort()
+      .map(async (entry) => parseRule(entry, await readFile(assertSafeRemoteRead(remoteDir, entry), 'utf8'))),
   );
 
   const seen = new Set<string>();
@@ -116,7 +118,8 @@ export function selectRules(input: RuleSelectionInput): RuleSelection {
   }
 
   const output = [...selected.values()].sort(
-    (left, right) => left.priority - right.priority || left.id.localeCompare(right.id) || left.source.localeCompare(right.source),
+    (left, right) =>
+      left.priority - right.priority || left.id.localeCompare(right.id) || left.source.localeCompare(right.source),
   );
 
   detectConflicts(output);

@@ -7,7 +7,9 @@ export function mergeSettings(values: JsonValue[]): JsonValue {
 
 function mergeJson(left: JsonValue, right: JsonValue): JsonValue {
   if (Array.isArray(left) && Array.isArray(right)) {
-    return [...new Set([...left, ...right].map((item) => JSON.stringify(item)))].map((item) => JSON.parse(item) as JsonValue);
+    return [...new Set([...left, ...right].map((item) => JSON.stringify(item)))].map(
+      (item) => JSON.parse(item) as JsonValue,
+    );
   }
 
   if (isRecord(left) && isRecord(right)) {

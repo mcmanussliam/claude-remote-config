@@ -16,7 +16,9 @@ describe('setupProject', () => {
     };
     expect(manifest.remote).toBe('../rules');
     expect(manifest.ref).toBeUndefined();
-    await expect(readFile(join(dir, '.gitignore'), 'utf8')).resolves.toContain('# claude-remote-config generated files');
+    await expect(readFile(join(dir, '.gitignore'), 'utf8')).resolves.toContain(
+      '# claude-remote-config generated files',
+    );
     await expect(readFile(join(dir, '.claude/CLAUDE.md'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
   });
 
