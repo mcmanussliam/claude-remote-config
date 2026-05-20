@@ -3,10 +3,6 @@ import { parseRule, selectRules } from '../../src/remote/rules.js';
 
 const projectHasTypescript = {
   files: new Set(['package.json', 'tsconfig.json']),
-  packageJson: {
-    dependencies: { typescript: '5.0.0' },
-    devDependencies: {}
-  }
 };
 
 describe('rules', () => {
@@ -97,7 +93,7 @@ Body`)
       manifestTags: ['language:typescript'],
       excludedIds: [],
       rules,
-      project: { files: new Set(['package.json']), packageJson: {} }
+      project: { files: new Set(['package.json']) }
     });
 
     expect(result.selected).toHaveLength(0);

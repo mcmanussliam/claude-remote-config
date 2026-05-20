@@ -7,10 +7,6 @@ import type { ProjectFacts } from '../../src/remote/requires.js';
 
 const typescriptProject: ProjectFacts = {
   files: new Set(['package.json', 'tsconfig.json', 'vitest.config.ts']),
-  packageJson: {
-    dependencies: { typescript: '5.0.0' },
-    devDependencies: { vitest: '2.1.9' },
-  },
 };
 
 async function write(path: string, content: string): Promise<void> {
