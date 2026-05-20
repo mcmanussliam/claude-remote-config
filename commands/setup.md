@@ -1,6 +1,6 @@
 ---
-description: Configure this project to use a shared claude-remote-config repository
-argument-hint: --remote <remote> [--ref <ref>] [--profile <profile>]
+description: Configure this project to use a shared remote config repository
+argument-hint: --remote <remote> [--ref <ref>]
 allowed-tools: Bash(claude-remote-config setup*)
 ---
 
@@ -21,4 +21,4 @@ After setup succeeds, tell the user to review and commit:
 .gitignore
 ```
 
-Then tell them to restart Claude Code in this project to fetch the remote ruleset. On restart, the plugin's `SessionStart` hook runs `init` automatically.
+Then tell them to restart Claude Code in this project to fetch the remote config. On restart, the plugin's `SessionStart` hook runs `init` automatically.
