@@ -146,11 +146,7 @@ async function walkDirectory(
   );
 }
 
-async function discoverSkills(
-  skillsDir: string,
-  remoteDir: string,
-  skills: RemoteSkillAsset[],
-): Promise<void> {
+async function discoverSkills(skillsDir: string, remoteDir: string, skills: RemoteSkillAsset[]): Promise<void> {
   const entries = await readdir(skillsDir).catch((err: NodeJS.ErrnoException) => {
     if (err.code === 'ENOENT') return null;
     throw err;

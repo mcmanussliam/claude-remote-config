@@ -39,12 +39,7 @@ export async function materializeRemoteAssets(projectDir: string, selection: Rem
         ]
       : []),
     ...(selection.hooks
-      ? [
-          writeAsset(
-            join(projectDir, PROJECT_FILES.hooksLocal),
-            `${JSON.stringify(selection.hooks.value, null, 2)}\n`,
-          ),
-        ]
+      ? [writeAsset(join(projectDir, PROJECT_FILES.hooksLocal), `${JSON.stringify(selection.hooks.value, null, 2)}\n`)]
       : []),
   ]);
 }
