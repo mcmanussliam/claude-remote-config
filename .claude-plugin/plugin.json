@@ -4,5 +4,6 @@
   "description": "Claude Code plugin for maintaining shared versioned Claude configurations.",
   "license": "MIT",
   "keywords": ["claude-code", "configuration", "rules"],
+  "homepage": "https://github.com/mcmanussliam/claude-remote-config#readme",
   "hooks": "./hooks/hooks.json"
 }

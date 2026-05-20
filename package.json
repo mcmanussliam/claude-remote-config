@@ -2,12 +2,20 @@
   "name": "claude-remote-config",
   "version": "0.1.0",
   "description": "Claude Code plugin for maintaining shared versioned Claude configurations.",
+  "license": "MIT",
+  "keywords": ["claude-code", "configuration", "rules"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mcmanussliam/claude-remote-config"
+  },
+  "homepage": "https://github.com/mcmanussliam/claude-remote-config#readme",
   "type": "module",
   "bin": {
     "claude-remote-config": "./bin/claude-remote-config"
   },
   "files": ["bin/", "dist/", ".claude-plugin/", "hooks/", "commands/", "docs/*.md", "assets/", "README.md"],
   "scripts": {
+    "prepare": "npm run build",
     "start": "tsx src/cli.ts",
     "build": "tsc -p tsconfig.build.json",
     "build:clean": "rm -rf dist && tsc -p tsconfig.build.json",
