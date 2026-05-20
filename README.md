@@ -29,7 +29,7 @@ claude plugin install remote-config@mcmanussliam
 2. In each project that should use the shared config, run the setup slash command from Claude Code:
 
 ```text
-/claude-remote-config setup --remote git@example.com:your-org/claude-config.git
+/remote-config setup --remote git@example.com:your-org/claude-config.git
 ```
 
 3. Review and commit the project config created by setup:
