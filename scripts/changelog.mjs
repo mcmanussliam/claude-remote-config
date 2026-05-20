@@ -19,12 +19,12 @@ const raw = execSync(`git log ${range} --pretty=format:"%s"`.trim(), { encoding:
 const commits = raw ? raw.split('\n') : [];
 
 const sections = {
-  feat:     { title: 'Features',       items: [] },
-  fix:      { title: 'Bug Fixes',      items: [] },
-  perf:     { title: 'Performance',    items: [] },
-  refactor: { title: 'Refactors',      items: [] },
-  docs:     { title: 'Documentation',  items: [] },
-  chore:    { title: 'Chores',         items: [] },
+  feat: { title: 'Features', items: [] },
+  fix: { title: 'Bug Fixes', items: [] },
+  perf: { title: 'Performance', items: [] },
+  refactor: { title: 'Refactors', items: [] },
+  docs: { title: 'Documentation', items: [] },
+  chore: { title: 'Chores', items: [] },
 };
 
 const pattern = /^(\w+)(\([^)]+\))?!?: (.+)$/;
@@ -57,4 +57,4 @@ const changelogPath = 'CHANGELOG.md';
 const header = '# Changelog\n\n';
 const existing = existsSync(changelogPath) ? readFileSync(changelogPath, 'utf8') : '';
 const rest = existing.startsWith(header) ? existing.slice(header.length) : existing;
-writeFileSync(changelogPath, `${header}${entry}\n\n${rest}`.trimEnd() + '\n');
+writeFileSync(changelogPath, `${`${header}${entry}\n\n${rest}`.trimEnd()}\n`);
