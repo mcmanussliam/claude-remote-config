@@ -98,19 +98,18 @@ async function initWithManifest(
 }
 
 async function hasGeneratedOutput(projectDir: string): Promise<boolean> {
-  for (const relativePath of [
+  const paths = [
     PROJECT_FILES.generatedRulesDir,
     PROJECT_FILES.generatedCommandsDir,
     PROJECT_FILES.skillsDir,
     PROJECT_FILES.settingsLocal,
     PROJECT_FILES.hooksLocal,
-  ]) {
-    try {
-      await access(join(projectDir, relativePath));
-      return true;
-    } catch {}
-  }
-  return false;
+  ];
+
+  return Promise.any(paths.map((p) => access(join(projectDir, p)))).then(
+    () => true,
+    () => false,
+  );
 }
 
 function formatError(error: unknown): string {
