@@ -29,6 +29,12 @@ async function exists(path) {
     }
 }
 async function hasGeneratedSkills(projectDir) {
-    const entries = await readdir(join(projectDir, PROJECT_FILES.skillsDir)).catch(() => null);
-    return entries?.some((entry) => entry.startsWith('remote-')) ?? false;
+    let entries = null;
+    try {
+        entries = await readdir(join(projectDir, PROJECT_FILES.skillsDir));
+    }
+    catch {
+        return false;
+    }
+    return entries.some((entry) => entry.startsWith('remote-'));
 }

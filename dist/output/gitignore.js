@@ -15,8 +15,9 @@ ${PROJECT_FILES.hooksLocal}`;
 export async function ensureGitignoreEntries(projectDir) {
     const path = join(projectDir, PROJECT_FILES.gitignore);
     const existing = await readFile(path, 'utf8').catch((err) => {
-        if (err.code === 'ENOENT')
+        if (err.code === 'ENOENT') {
             return '';
+        }
         throw err;
     });
     if (existing.includes('# claude-remote-config generated files')) {

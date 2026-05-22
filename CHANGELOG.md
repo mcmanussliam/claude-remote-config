@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0] - 2026-05-22
+
+### Bug Fixes
+
+- **plugin**: Patch up code styling issues and dodgy write calls
+
 ## [1.0.0] - 2026-05-20
 
 ### Features

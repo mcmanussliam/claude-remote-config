@@ -9,10 +9,10 @@
       "source": {
         "source": "github",
         "repo": "mcmanussliam/claude-remote-config",
-        "ref": "remote-config--v1.0.0"
+        "ref": "remote-config--v1.1.0"
       },
       "description": "Shared, versioned Claude Code configuration for every project.",
-      "version": "1.0.0"
+      "version": "1.1.0"
     }
   ]
 }
