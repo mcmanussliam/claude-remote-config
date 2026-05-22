@@ -18,40 +18,53 @@ export async function materializeRemoteAssets(projectDir: string, selection: Rem
     cleanGeneratedSkills(projectDir),
   ]);
 
-  await Promise.all([
-    ...selection.rules.map((rule) =>
-      writeAsset(join(projectDir, PROJECT_FILES.generatedRulesDir, rule.relativeOutputPath), rule.content),
-    ),
-    ...selection.commands.map((command) =>
-      writeAsset(join(projectDir, PROJECT_FILES.generatedCommandsDir, command.relativeOutputPath), command.content),
-    ),
-    ...selection.skills.flatMap((skill) =>
-      skill.files.map((file) =>
-        writeAsset(join(projectDir, PROJECT_FILES.skillsDir, file.relativeOutputPath), file.content),
-      ),
-    ),
-    ...(selection.settings
-      ? [
-          writeAsset(
-            join(projectDir, PROJECT_FILES.settingsLocal),
-            `${JSON.stringify(selection.settings.value, null, 2)}\n`,
-          ),
-        ]
-      : []),
-    ...(selection.hooks
-      ? [writeAsset(join(projectDir, PROJECT_FILES.hooksLocal), `${JSON.stringify(selection.hooks.value, null, 2)}\n`)]
-      : []),
+  function writeMap<T>(array: T[], acc: (item: T) => Parameters<typeof writeAsset>): Promise<void>[] {
+    return array.map((item) => writeAsset(...acc(item)));
+  }
+
+  const rules$ = writeMap(selection.rules, (rule) => [
+    join(projectDir, PROJECT_FILES.generatedRulesDir, rule.relativeOutputPath),
+    rule.content,
   ]);
+
+  const commands$ = writeMap(selection.commands, (command) => [
+    join(projectDir, PROJECT_FILES.generatedCommandsDir, command.relativeOutputPath),
+    command.content,
+  ]);
+
+  const skills$ = selection.skills.flatMap((skill) =>
+    writeMap(skill.files, (file) => [join(projectDir, PROJECT_FILES.skillsDir, file.relativeOutputPath), file.content]),
+  );
+
+  const settings$ = selection.settings
+    ? [
+        writeAsset(
+          join(projectDir, PROJECT_FILES.settingsLocal),
+          `${JSON.stringify(selection.settings.value, null, 2)}\n`,
+        ),
+      ]
+    : [];
+
+  const hooks$ = selection.hooks
+    ? [writeAsset(join(projectDir, PROJECT_FILES.hooksLocal), `${JSON.stringify(selection.hooks.value, null, 2)}\n`)]
+    : [];
+
+  await Promise.all([...rules$, ...commands$, ...skills$, ...settings$, ...hooks$]);
 }
 
 async function cleanGeneratedSkills(projectDir: string): Promise<void> {
   const skillsDir = join(projectDir, PROJECT_FILES.skillsDir);
   const entries = await readdir(skillsDir).catch((err: NodeJS.ErrnoException) => {
-    if (err.code === 'ENOENT') return null;
+    if (err.code === 'ENOENT') {
+      return null;
+    }
+
     throw err;
   });
 
-  if (!entries) return;
+  if (!entries) {
+    return;
+  }
 
   await Promise.all(
     entries
@@ -72,8 +85,10 @@ export async function validateNoCommandCollisions(projectDir: string, commands: 
   const localCommandNames = new Set(localCommandFiles.map((file) => basename(file, '.md')));
 
   for (const command of commands) {
-    if (localCommandNames.has(command.commandName)) {
-      throw new Error(`command collision: generated command "${command.commandName}" conflicts with local command`);
+    if (!localCommandNames.has(command.commandName)) {
+      continue;
     }
+
+    throw new Error(`command collision: generated command "${command.commandName}" conflicts with local command`);
   }
 }

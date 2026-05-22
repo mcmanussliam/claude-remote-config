@@ -18,7 +18,10 @@ ${PROJECT_FILES.hooksLocal}`;
 export async function ensureGitignoreEntries(projectDir: string): Promise<boolean> {
   const path = join(projectDir, PROJECT_FILES.gitignore);
   const existing = await readFile(path, 'utf8').catch((err: NodeJS.ErrnoException) => {
-    if (err.code === 'ENOENT') return '';
+    if (err.code === 'ENOENT') {
+      return '';
+    }
+
     throw err;
   });
 

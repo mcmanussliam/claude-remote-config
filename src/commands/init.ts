@@ -36,7 +36,6 @@ export async function initProject(options: InitOptions): Promise<InitResult> {
   const pluginDataDir = resolve(options.pluginDataDir);
 
   const manifest = await loadManifest(projectDir);
-
   if (!manifest) {
     return { manifest: null, summary: '' };
   }

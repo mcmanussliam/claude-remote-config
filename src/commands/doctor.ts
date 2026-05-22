@@ -6,7 +6,6 @@ import { PROJECT_FILES } from '../config/paths.js';
 
 export async function doctorProject(projectDir: string): Promise<string> {
   const manifest = await loadManifest(projectDir);
-
   if (!manifest) {
     return `claude-remote-config doctor: missing ${PROJECT_FILES.manifest}\n`;
   }
@@ -51,6 +50,13 @@ async function exists(path: string): Promise<boolean> {
 }
 
 async function hasGeneratedSkills(projectDir: string): Promise<boolean> {
-  const entries = await readdir(join(projectDir, PROJECT_FILES.skillsDir)).catch(() => null);
-  return entries?.some((entry) => entry.startsWith('remote-')) ?? false;
+  let entries = null;
+
+  try {
+    entries = await readdir(join(projectDir, PROJECT_FILES.skillsDir));
+  } catch {
+    return false;
+  }
+
+  return entries.some((entry) => entry.startsWith('remote-'));
 }
